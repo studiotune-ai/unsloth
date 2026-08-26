@@ -41,7 +41,9 @@ const PUSH_DEBOUNCE_MS = 800;
 // Version 3 migrates untouched sidebar layouts to keep Video under More.
 // Version 4 pins Video under Images. Without this bump a synced profile
 // rehydrates its stored layout over the local migration.
-const PERSONALIZATION_VERSION = 4;
+// Version 5 is the StudioTune rebrand: primary rail becomes Train / Recipes
+// / Export / Compare and the chat-era rows demote to More.
+const PERSONALIZATION_VERSION = 5;
 
 type ProfileSnapshot = {
   displayName: string;
