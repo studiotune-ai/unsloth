@@ -1,6 +1,6 @@
 {
-  "productName": "Unsloth",
-  "identifier": "ai.unsloth.studio",
+  "productName": "StudioTune",
+  "identifier": "ai.studiotune.desktop",
   "build": {
     "beforeDevCommand": {
       "cwd": "../frontend",
@@ -21,7 +21,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Unsloth",
+        "title": "StudioTune",
         "width": 760,
         "height": 560,
         "center": true,
@@ -37,13 +37,13 @@
   "plugins": {
     "deep-link": {
       "desktop": {
-        "schemes": ["unsloth"]
+        "schemes": ["studiotune", "unsloth"]
       }
     },
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFBQzA4RjczODM0RjE1QjcKUldTM0ZVK0RjNC9BR2t4R0RVaFR5cTkyUlRVQ1FwaGV0Nk04eWNwWXBhZnlzalJydllmZm1QTS8K",
       "endpoints": [
-        "https://github.com/unslothai/unsloth/releases/latest/download/latest.json"
+        "https://studiotune.ai/desktop/updates/latest.json"
       ],
       "windows": {
         "installMode": "passive"
@@ -52,10 +52,10 @@
   },
   "bundle": {
     "active": true,
-    "createUpdaterArtifacts": true,
-    "publisher": "Unsloth AI",
-    "homepage": "https://unsloth.ai/",
-    "copyright": "© 2026 Unsloth AI. All rights reserved.",
+    "createUpdaterArtifacts": false,
+    "publisher": "Ainfera Inc",
+    "homepage": "https://studiotune.ai",
+    "copyright": "© 2026 Ainfera Inc. All rights reserved. Includes Unsloth (AGPL-3.0-only); see attribution/STUDIOTUNE.md.",
     "license": "AGPL-3.0-only",
     "targets": ["app", "appimage", "deb", "dmg", "nsis"],
     "icon": [
@@ -89,9 +89,9 @@
       },
       "deb": {
         "desktopTemplate": "./linux/unsloth.desktop",
-        "provides": ["unsloth-studio-desktop"],
-        "conflicts": ["unsloth-studio-desktop"],
-        "replaces": ["unsloth-studio-desktop"],
+        "provides": ["studiotune-desktop"],
+        "conflicts": ["studiotune-desktop", "unsloth-studio-desktop"],
+        "replaces": ["studiotune-desktop", "unsloth-studio-desktop"],
         "postRemoveScript": "./linux/postremove.sh"
       }
     }

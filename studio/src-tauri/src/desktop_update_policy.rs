@@ -1,10 +1,22 @@
 use serde::Serialize;
 use std::collections::HashMap;
 
-const DESKTOP_RELEASE_PAGE_BASE_URL: &str = "https://github.com/unslothai/unsloth/releases/tag/";
+// StudioTune HOLD build: no updater endpoint pings unslothai/* releases. Auto
+// updates are disabled entirely in this hop; keep the constants for the manual
+// fetch path so the code still compiles, but short-circuit before any request.
+const DESKTOP_RELEASE_PAGE_BASE_URL: &str = "https://studiotune.ai/desktop/releases/";
 const DESKTOP_RELEASE_TAG_PREFIX: &str = "v";
 const DESKTOP_UPDATER_MANIFEST_URL: &str =
-    "https://github.com/unslothai/unsloth/releases/latest/download/latest.json";
+    "https://studiotune.ai/desktop/updates/latest.json";
+// Hard lock: the StudioTune host does not push updates yet. Keeping this false
+// prevents any network call to a release channel — Unsloth's or ours.
+const STUDIOTUNE_UPDATER_ENABLED: bool = false;
+
+/// Public accessor so `desktop_updater::check_desktop_update` can guard the
+/// tauri_plugin_updater fetch against the same flag as the manual path.
+pub(crate) fn studiotune_updater_enabled() -> bool {
+    STUDIOTUNE_UPDATER_ENABLED
+}
 
 #[allow(dead_code)]
 #[derive(Debug, Serialize)]
@@ -62,6 +74,9 @@ pub(crate) fn desktop_update_policy() -> DesktopUpdatePolicy {
 
 #[tauri::command]
 pub(crate) async fn check_desktop_manual_update() -> Result<Option<ManualUpdateInfo>, String> {
+    if !STUDIOTUNE_UPDATER_ENABLED {
+        return Ok(None);
+    }
     if !matches!(desktop_update_mode(), DesktopUpdateMode::ManualLinuxPackage) {
         return Ok(None);
     }
@@ -121,7 +136,7 @@ fn validate_channel_metadata(
     }
 
     let expected_prefix = format!(
-        "https://github.com/unslothai/unsloth/releases/download/v{normalized_version}/"
+        "https://studiotune.ai/desktop/releases/download/v{normalized_version}/"
     );
     for (platform, entry) in &metadata.platforms {
         if entry.url.trim().is_empty() {
@@ -448,11 +463,11 @@ mod tests {
     fn updater_policy_uses_normal_release_discovery_and_links() {
         assert_eq!(
             super::DESKTOP_UPDATER_MANIFEST_URL,
-            "https://github.com/unslothai/unsloth/releases/latest/download/latest.json"
+            "https://studiotune.ai/desktop/updates/latest.json"
         );
         assert_eq!(super::DESKTOP_RELEASE_TAG_PREFIX, "v");
         let metadata = metadata_with_url(
-            "https://github.com/unslothai/unsloth/releases/download/v0.1.528-beta/app.AppImage",
+            "https://studiotune.ai/desktop/releases/download/v0.1.528-beta/app.AppImage",
         );
         assert!(super::validate_channel_metadata(&metadata, "0.1.528-beta").is_ok());
     }
@@ -460,11 +475,14 @@ mod tests {
     #[test]
     fn updater_policy_rejects_moving_legacy_mismatched_and_foreign_asset_urls() {
         for url in [
+            // Any Unsloth-hosted release URL is now foreign to the StudioTune build.
             "https://github.com/unslothai/unsloth/releases/latest/download/app.AppImage",
-            "https://github.com/unslothai/unsloth/releases/download/desktop-latest/app.AppImage",
-            "https://github.com/unslothai/unsloth/releases/download/desktop-v0.1.528-beta/app.AppImage",
-            "https://github.com/unslothai/unsloth/releases/download/v0.1.529-beta/app.AppImage",
-            "https://github.com/example/unsloth/releases/download/v0.1.528-beta/app.AppImage",
+            "https://github.com/unslothai/unsloth/releases/download/v0.1.528-beta/app.AppImage",
+            "https://studiotune.ai/desktop/releases/latest/app.AppImage",
+            "https://studiotune.ai/desktop/releases/download/desktop-latest/app.AppImage",
+            "https://studiotune.ai/desktop/releases/download/desktop-v0.1.528-beta/app.AppImage",
+            "https://studiotune.ai/desktop/releases/download/v0.1.529-beta/app.AppImage",
+            "https://example.com/desktop/releases/download/v0.1.528-beta/app.AppImage",
         ] {
             let metadata = metadata_with_url(url);
             assert!(
@@ -474,4 +492,11 @@ mod tests {
         }
     }
 
+    #[test]
+    fn studiotune_hold_build_disables_updater() {
+        // StudioTune HOLD hop: the desktop updater must not fire against any
+        // release channel. When we ship an updater, flip this flag and remove
+        // the assertion (or invert it) so this test still guards the contract.
+        assert!(!super::STUDIOTUNE_UPDATER_ENABLED);
+    }
 }
