@@ -6,6 +6,10 @@
 @import "shadcn/tailwind.css";
 @import "streamdown/styles.css";
 @import "./features/hub/hub.css";
+/* StudioTune brand tokens overlay. Layered after the shadcn base so the
+ * StudioTune-specific --ai-* and status colors take precedence, but before
+ * feature CSS so the Tune Agent rail and wordmark can read them. */
+@import "./brand/studiotune-brand.css";
 @import "@fontsource-variable/figtree";
 @import "@fontsource-variable/space-grotesk";
 @import "@fontsource-variable/inter";

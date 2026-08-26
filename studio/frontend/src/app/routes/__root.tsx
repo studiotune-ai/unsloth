@@ -32,6 +32,7 @@ import {
 } from "@/features/settings";
 import { useTrainingUnloadGuard } from "@/features/training";
 import { TransformersUpgradeDialog } from "@/features/transformers-upgrade";
+import { TuneAgentRail } from "@/features/tune-agent";
 import { useSidebarPin } from "@/hooks/use-sidebar-pin";
 import { type TranslationKey, useT } from "@/i18n";
 import {
@@ -261,7 +262,8 @@ export const Route = createRootRoute({
 const HIDDEN_NAVBAR_ROUTES = ["/login", "/change-password"];
 
 // Fallback when no matched route declares a `staticData.title`.
-const DEFAULT_DOCUMENT_TITLE = "Unsloth";
+// StudioTune host title — locked by tests (studiotune-brand-tokens.test.ts).
+const DEFAULT_DOCUMENT_TITLE = "StudioTune";
 
 function RootLayout() {
   const t = useT();
@@ -630,6 +632,10 @@ function RootLayout() {
               )}
             </div>
           </SidebarInset>
+          {/* Persistent StudioTune Tune Agent rail. Renders in HOLD when
+              Tune Agent is not connected; never fakes a live plan. Hidden on
+              auth-flow routes above via the surrounding hideNavbar branch. */}
+          <TuneAgentRail />
         </SidebarProvider>
       )}
     </>

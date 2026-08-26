@@ -47,9 +47,9 @@ export const en = {
     shutdown: "Shutdown",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "{name} account menu",
     updateAvailable: "Update available",
     resize: {
@@ -58,7 +58,7 @@ export const en = {
       drag: "Drag to resize",
     },
     aria: {
-      home: "Unsloth home",
+      home: "StudioTune home",
       closeSidebar: "Close sidebar",
       openSidebar: "Open sidebar",
       resizeSidebar: "Resize or collapse sidebar",
