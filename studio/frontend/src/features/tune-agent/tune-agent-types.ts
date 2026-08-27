@@ -91,4 +91,38 @@ export type TuneAgentBridge = {
    * plan that will never arrive.
    */
   requestPlan(request: string): Promise<OutcomePlan | null>;
+  /**
+   * Ask the desktop host to admit the runtime for Agent mode. Returns the
+   * receipt the host produced (whether or not admission passed) so the rail
+   * can display an honest refusal reason. `null` means the host itself was
+   * unreachable (no Tauri IPC).
+   */
+  admitRuntime?(request: TuneAgentAdmitRequest): Promise<TuneAgentAdmitOutcome | null>;
+};
+
+/** Parameters for the admit-runtime call the rail sends to the host. */
+export type TuneAgentAdmitRequest = {
+  /** Absolute path to the host python binary. Policy admits exactly one. */
+  python: string;
+  /**
+   * Absolute (or `~`-prefixed) path to the MLX snapshot directory. Policy
+   * admits an explicit allow-list; a Hub id here is refused.
+   */
+  snapshot: string;
+  /**
+   * The mlx-lm argv StudioTune will pass on Agent-mode Train. Any element
+   * shaped like `owner/name` is refused as a Hub id.
+   */
+  mlxArgs: string[];
+};
+
+/** Admit receipt echoed back to the frontend. Shape mirrors the Rust
+ *  `AdmitOutcome` verbatim so the receipt writer can include it as-is. */
+export type TuneAgentAdmitOutcome = {
+  admitted: boolean;
+  python: string;
+  snapshot: string;
+  reason: string | null;
+  /** Always "1" on a successful admit; the sidecar is launched offline. */
+  hfHubOffline: string;
 };

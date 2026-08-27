@@ -165,6 +165,44 @@ function TuneAgentRailContent({
     );
   }
 
+  async function handleAdmit() {
+    if (bridge.admitRuntime === undefined) {
+      setLastReason(
+        "Admit refused: this build has no host-side admit bridge.",
+      );
+      return;
+    }
+    // The exact host + snapshot the StudioTune admit policy accepts. These
+    // are locked in the Rust side (ADMITTED_HOST_PYTHON /
+    // ADMITTED_MLX_SNAPSHOTS) and mirrored here so the UI can quote them
+    // when a click asks for admit. mlxArgs is empty for this hop: a real
+    // Train call adds `--model <snapshot>` and nothing else — a hub id
+    // would be refused by the Rust guard.
+    const outcome = await bridge.admitRuntime({
+      python:
+        "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13",
+      snapshot:
+        "~/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+      mlxArgs: [],
+    });
+    if (outcome === null) {
+      setLastReason(
+        "Admit refused: desktop host is not reachable. Rail stays in HOLD.",
+      );
+      return;
+    }
+    if (outcome.admitted) {
+      setLastReason(
+        `Admitted: python=${outcome.python}, snapshot=${outcome.snapshot}, HF_HUB_OFFLINE=${outcome.hfHubOffline}.`,
+      );
+    } else {
+      setLastReason(
+        outcome.reason ??
+          "Admit refused: host declined without a reason.",
+      );
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (state.mode === "ask") {
@@ -239,6 +277,36 @@ function TuneAgentRailContent({
       </form>
 
       <PlanCard plan={state.plan} connected={state.connected} />
+
+      {state.mode === "agent" && (
+        <div
+          className="mt-3 flex items-center justify-between rounded-md border border-white/10 px-3 py-2 text-xs"
+          data-testid="tune-agent-admit-row"
+          style={{
+            background: "var(--ai-surface)",
+            color: state.runtimeAdmitted
+              ? STATUS_COLOR.ship
+              : STATUS_COLOR.hold,
+          }}
+        >
+          <span>
+            {state.runtimeAdmitted
+              ? "Runtime admitted (HF_HUB_OFFLINE=1, snapshot allow-listed)."
+              : "Runtime not admitted. Agent Train stays refused until admit passes."}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              void handleAdmit();
+            }}
+            className="ml-2 rounded-md border border-white/20 px-2 py-1 text-[11px] font-medium"
+            data-testid="tune-agent-admit"
+            style={{ color: "var(--ai-text)" }}
+          >
+            Admit runtime
+          </button>
+        </div>
+      )}
 
       <div
         className="mt-3 grid grid-cols-3 gap-2"

@@ -8,9 +8,13 @@ export {
   type OutcomePlan,
   type TuneAgentBridgeState,
   type TuneAgentBridge,
+  type TuneAgentAdmitRequest,
+  type TuneAgentAdmitOutcome,
 } from "./tune-agent-types";
 export {
+  DEFAULT_TUNE_AGENT_BINARY_PATH,
   makeDisconnectedTuneAgentBridge,
+  makeLiveTuneAgentBridge,
   loadTuneAgentBridge,
 } from "./tune-agent-ipc";
 export {
