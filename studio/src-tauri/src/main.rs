@@ -20,6 +20,7 @@ mod native_path_policy;
 mod preflight;
 mod process;
 mod process_identity;
+mod tune_agent;
 mod update;
 mod webview_permissions;
 mod windows_job;
@@ -1882,6 +1883,7 @@ fn main() {
         .manage(update::new_update_state())
         .manage(new_close_to_tray_state())
         .manage(native_file_dialogs::ChatImportRegistry::default())
+        .manage(tune_agent::new_tune_agent_state())
         .invoke_handler(tauri::generate_handler![
             set_training_active,
             set_renderer_activity,
@@ -1909,6 +1911,9 @@ fn main() {
             desktop_updater::check_desktop_update,
             desktop_updater::desktop_update_cleanup_armed,
             desktop_updater::resume_desktop_update_cleanup,
+            tune_agent::tune_agent_status,
+            tune_agent::tune_agent_start,
+            tune_agent::tune_agent_admit_runtime,
             diagnostics::collect_support_diagnostics,
             native_clipboard::read_native_clipboard_files,
             native_clipboard::read_native_clipboard_png,
