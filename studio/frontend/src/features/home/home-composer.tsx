@@ -23,6 +23,7 @@ import {
   subscribeAcceptedLocalDataset,
 } from "@/features/data-recipes";
 import { usePlanSessionStore } from "./plan-session-store";
+import { isRuntimeAdmitted, receipt } from "./mlx-runtime-admission";
 
 /**
  * StudioTune Home composer — one prompt, one plan card.
@@ -43,8 +44,10 @@ import { usePlanSessionStore } from "./plan-session-store";
  *
  *   * Facts (`parent` / `dataset` / `runtimeAdmitted`) are the tiny snapshot
  *     the local host already knows. Parent is seeded from the APP-007 retained local snapshot dir.
- *     Dataset and runtimeAdmitted stay empty so those clarifications still
- *     fire. Accept still never calls Engine.
+ *     Dataset is seeded from an accepted APP-010 local-files bind.
+ *     runtimeAdmitted is derived from the persisted mlx admission receipt
+ *     via `isRuntimeAdmitted(receipt)` — never hardcoded true, never a toggle.
+ *     Accept still never calls Engine.
  *
  *   * `planCardHasHubId` is asserted on every render so a regression that
  *     let a Hub id land on the card would fail loudly rather than quietly.
@@ -68,7 +71,7 @@ function factsFromBinds(): OutcomePlanFacts {
   return {
     parent: CLI007_RETAINED.parentSnapshotDir,
     dataset: getAcceptedLocalDatasetPath(),
-    runtimeAdmitted: false,
+    runtimeAdmitted: isRuntimeAdmitted(receipt),
   };
 }
 
@@ -87,7 +90,7 @@ export function HomeComposer({
       setFacts((prev) => ({
         ...prev,
         dataset: getAcceptedLocalDatasetPath(),
-        runtimeAdmitted: false,
+        runtimeAdmitted: isRuntimeAdmitted(receipt),
       }));
     });
   }, []);
@@ -353,12 +356,8 @@ export function HomeComposer({
               id="home-composer-fact-admit"
               type="checkbox"
               checked={facts.runtimeAdmitted}
-              onChange={(e) =>
-                setFacts((prev) => ({
-                  ...prev,
-                  runtimeAdmitted: e.target.checked,
-                }))
-              }
+              disabled
+              readOnly
               data-testid="home-composer-fact-admit"
             />
             Runtime admitted on this Mac

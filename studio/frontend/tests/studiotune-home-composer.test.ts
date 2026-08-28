@@ -304,7 +304,8 @@ test("HomeComposer default Accept path goes through applyPlanRecipe (never Engin
 
 test("default composer facts seed the local snapshot parent, not a Hub id", () => {
   assert.ok(HOME_COMPOSER_SOURCE.includes("CLI007_RETAINED.parentSnapshotDir"));
-  assert.ok(HOME_COMPOSER_SOURCE.includes("runtimeAdmitted: false"));
+  assert.ok(HOME_COMPOSER_SOURCE.includes("isRuntimeAdmitted(receipt)"));
+  assert.ok(!HOME_COMPOSER_SOURCE.includes("runtimeAdmitted: true"));
   assert.ok(
     !/parent:\s*null/.test(HOME_COMPOSER_SOURCE) ||
       HOME_COMPOSER_SOURCE.includes("CLI007_RETAINED.parentSnapshotDir"),

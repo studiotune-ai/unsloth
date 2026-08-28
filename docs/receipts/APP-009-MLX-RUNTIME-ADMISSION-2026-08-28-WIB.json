@@ -1,0 +1,36 @@
+{
+  "issue": "APP-009",
+  "linear": "AIN-951",
+  "hop": "mlx-runtime-admission-from-engine-admit",
+  "when": "2026-08-28 23:38 WIB",
+  "head_base": "2440b1d91d8a43ca32646e0b293575584a1bfc08",
+  "python_executable": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13",
+  "python_executable_digest": "sha256:f70035d9225815eca6c71970987963d36423039b2235e6305aa89b516d51ef9b",
+  "mlx_lm_version": "0.31.3",
+  "mlx_lm_distribution": "mlx-lm",
+  "receipt_status": "ADMITTED",
+  "executor_kind": "mlx_lora_adapter",
+  "runtimeAdmitted": true,
+  "runtimeAdmitted_derived": true,
+  "runtimeAdmitted_source": "isRuntimeAdmitted(receipt)",
+  "trained": false,
+  "authority": false,
+  "action_taken": false,
+  "beta_ready_claim": false,
+  "pixel": "UNPROVEN",
+  "merge_desktop_app_11": false,
+  "signed": false,
+  "notarize": false,
+  "hub_contacted": false,
+  "probe": "production",
+  "injected_probe": false,
+  "receipt_paths": [
+    "docs/receipts/mlx_runtime_admission.json",
+    "studio/frontend/src/features/home/mlx-runtime-admission.json"
+  ],
+  "notes": [
+    "Engine MLXRuntimeAdmission.admit(python3.13) with the production probe returned ADMITTED / mlx_lora_adapter.",
+    "Home factsFromBinds and the dataset subscribe derive runtimeAdmitted via isRuntimeAdmitted(receipt).",
+    "Admit checkbox is read-only. No toggle. No train. No sign. No merge #11."
+  ]
+}

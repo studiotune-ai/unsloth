@@ -87,6 +87,7 @@ test("page Accept writes the home bind; composer reads it; admit stays false", a
   assert.ok(page.includes("bindAcceptedLocalFilesToHome"));
   assert.ok(page.includes("clearAcceptedLocalFilesFromHome"));
   assert.ok(composer.includes("getAcceptedLocalDatasetPath"));
-  assert.ok(composer.includes("runtimeAdmitted: false"));
+  assert.ok(composer.includes("isRuntimeAdmitted(receipt)"));
+  assert.ok(!/runtimeAdmitted:\s*true/.test(composer));
   assert.ok(!/createRecipeDraft/.test(page.slice(page.indexOf("function acceptLocalFiles"))));
 });
