@@ -76,6 +76,7 @@ export const fr = {
       runOptions: "Options d'exécution",
     },
     navigation: {
+      home: "Accueil",
       newChat: "Nouvelle discussion",
       returnToChat: "Retour à la discussion",
       returnToChats: "Retour à {count} discussions",

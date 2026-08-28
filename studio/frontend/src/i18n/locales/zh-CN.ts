@@ -71,6 +71,7 @@ export const zhCN = {
       runOptions: "训练选项",
     },
     navigation: {
+      home: "首页",
       newChat: "新聊天",
       returnToChat: "返回聊天",
       returnToChats: "返回 {count} 个聊天",

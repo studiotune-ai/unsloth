@@ -76,6 +76,7 @@ export const hi = {
       runOptions: "रन विकल्प",
     },
     navigation: {
+      home: "होम",
       newChat: "नई चैट",
       returnToChat: "चैट पर लौटें",
       returnToChats: "{count} चैट पर लौटें",

@@ -75,6 +75,7 @@ export const ja = {
       runOptions: "実行オプション",
     },
     navigation: {
+      home: "ホーム",
       newChat: "新規チャット",
       returnToChat: "チャットに戻る",
       returnToChats: "{count} 件のチャットに戻る",

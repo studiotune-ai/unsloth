@@ -3310,3 +3310,93 @@ html[data-chat-font] .aui-root {
 	animation: none !important;
 	transition: none !important;
 }
+
+
+/* StudioTune chrome remap.
+ * The Unsloth host still owns :root / .dark mechanics above. These later
+ * declarations retarget the painted surfaces, accent, and type so a reviewer
+ * sees StudioTune, not Unsloth green / Inter / warm-white. Token values are
+ * the locked Desktop --ai-* contract — do not invent new ones. */
+:root,
+:root.dark,
+.dark {
+	--background: #05060a;
+	--foreground: #f1f4fa;
+	--card: #0c1016;
+	--card-foreground: #f1f4fa;
+	--popover: #0c1016;
+	--popover-foreground: #f1f4fa;
+	--primary: #a9c7ff;
+	--primary-foreground: #04060a;
+	--secondary: #11151e;
+	--secondary-foreground: #f1f4fa;
+	--muted: #11151e;
+	--muted-foreground: #919aaa;
+	--accent: #11151e;
+	--accent-foreground: #f1f4fa;
+	--border: rgba(169, 199, 255, 0.12);
+	--input: rgba(169, 199, 255, 0.12);
+	--sidebar: #090c11;
+	--sidebar-foreground: #f1f4fa;
+	--sidebar-primary: #a9c7ff;
+	--sidebar-primary-foreground: #04060a;
+	--sidebar-accent: #11151e;
+	--sidebar-accent-foreground: #f1f4fa;
+	--sidebar-border: rgba(169, 199, 255, 0.12);
+	--nav-fg: #f1f4fa;
+	--nav-fg-muted: #919aaa;
+	--nav-surface-hover: #11151e;
+	--nav-icon-idle: #757a82;
+	--nav-beta-border: rgba(169, 199, 255, 0.22);
+	--panel-surface-fg-muted: #919aaa;
+	--chat-icon-fg: #919aaa;
+	--verified: #5be39b;
+	--control-accent: #a9c7ff;
+	--control-accent-foreground: #04060a;
+	--font-sans: "Poppins", "Poppins Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "Poppins", "Poppins Variable", "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+	--font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+}
+
+:root.light,
+.light {
+	--background: #f5f7fa;
+	--foreground: #17202c;
+	--card: #ffffff;
+	--card-foreground: #17202c;
+	--popover: #ffffff;
+	--popover-foreground: #17202c;
+	--primary: #315f99;
+	--primary-foreground: #ffffff;
+	--secondary: #e5ebf3;
+	--secondary-foreground: #17202c;
+	--muted: #eef2f7;
+	--muted-foreground: #526176;
+	--accent: #e5ebf3;
+	--accent-foreground: #17202c;
+	--border: rgba(43, 69, 104, 0.14);
+	--input: rgba(43, 69, 104, 0.14);
+	--sidebar: #eef2f7;
+	--sidebar-foreground: #17202c;
+	--sidebar-primary: #315f99;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #e5ebf3;
+	--sidebar-accent-foreground: #17202c;
+	--sidebar-border: rgba(43, 69, 104, 0.14);
+	--nav-fg: #17202c;
+	--nav-fg-muted: #526176;
+	--nav-surface-hover: #e5ebf3;
+	--nav-icon-idle: #68758a;
+	--verified: #17633b;
+	--control-accent: #315f99;
+	--control-accent-foreground: #ffffff;
+}
+
+html,
+body,
+#root {
+	background: var(--ai-bg, #05060a);
+	color: var(--ai-text, #f1f4fa);
+	font-family: var(--studiotune-font-ui, var(--font-sans));
+}

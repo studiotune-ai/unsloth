@@ -75,6 +75,7 @@ export const ru = {
       runOptions: "Параметры запуска",
     },
     navigation: {
+      home: "Главная",
       newChat: "Новый чат",
       returnToChat: "Вернуться к чату",
       returnToChats: "Вернуться к чатам ({count})",

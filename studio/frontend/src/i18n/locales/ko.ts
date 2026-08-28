@@ -73,6 +73,7 @@ export const ko = {
       runOptions: "학습 옵션",
     },
     navigation: {
+      home: "홈",
       newChat: "새 채팅",
       returnToChat: "채팅으로 돌아가기",
       returnToChats: "채팅 {count}개로 돌아가기",

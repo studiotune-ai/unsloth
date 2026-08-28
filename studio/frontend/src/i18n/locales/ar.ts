@@ -73,6 +73,7 @@ export const ar = {
       runOptions: "خيارات التدريب",
     },
     navigation: {
+      home: "الرئيسية",
       newChat: "محادثة جديدة",
       returnToChat: "العودة إلى المحادثة",
       returnToChats: "العودة إلى المحادثات قيد التشغيل ({count})",

@@ -76,6 +76,7 @@ export const de = {
       runOptions: "Trainingslauf-Optionen",
     },
     navigation: {
+      home: "Start",
       newChat: "Neuer Chat",
       returnToChat: "Zurück zum Chat",
       returnToChats: "Zurück zu {count} Chats",

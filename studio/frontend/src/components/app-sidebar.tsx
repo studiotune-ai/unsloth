@@ -3456,10 +3456,8 @@ export function AppSidebar() {
               )}
             >
                 <Link
-                  // StudioTune leads with Train, not Chat. Falls back to the
-                  // studio route so the wordmark drops the user on the
-                  // fine-tuning studio home instead of a fresh chat.
-                  to="/studio"
+                  // StudioTune leads with Home (Clusy-style composer), not Chat.
+                  to="/home"
                   onClick={(event) => {
                     if (chatOnlyMeasured) {
                       // Chat-only host: /studio is grayed out. Preserve the
@@ -3673,8 +3671,21 @@ export function AppSidebar() {
 
           <SidebarGroupContent>
             <SidebarMenu>
+              <NavItem
+                icon={LayoutAlignLeftIcon}
+                label={t("shell.navigation.home")}
+                active={pathname === "/home" || pathname.startsWith("/home/")}
+                testId="nav-row-home"
+                onClick={() => {
+                  navigate({ to: "/home" });
+                  closeMobileIfOpen();
+                }}
+                onIntent={() => {
+                  preloadSilently(router.preloadRoute({ to: "/home" }));
+                }}
+              />
               {/* Order and pin state come from Settings -> Appearance ->
-                  Sidebar navigation. */}
+                  Sidebar navigation. Experiment workspace stays one rail. */}
               {inlineNavIds.map((id) => {
                 const row = navRows[id];
                 // A row whose capability is still unmeasured spins instead of blacking out.
@@ -4398,7 +4409,7 @@ export function AppSidebar() {
                       pr on the button reserves room for the settings cog */}
                   <div className="flex min-w-0 flex-1 flex-col gap-px leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-heading text-ui-13p5 tracking-[0.025em] dark:tracking-[0.04em] font-semibold text-nav-fg">{displayTitle}</span>
-                    <span className="truncate text-ui-11p5 tracking-nav text-muted-foreground">Unsloth</span>
+                    <span className="truncate text-ui-11p5 tracking-nav text-muted-foreground">{t("shell.product")}</span>
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>

@@ -110,3 +110,37 @@ test("i18n shell.product / shell.brand say StudioTune", () => {
   assert.match(source, /brand:\s*"StudioTune"/);
   assert.match(source, /product:\s*"StudioTune"/);
 });
+
+test("index.css remaps Unsloth chrome to StudioTune tokens", () => {
+  const css = readFileSync(new URL("../src/index.css", import.meta.url), "utf8");
+  assert.match(css, /StudioTune chrome remap/);
+  assert.match(css, /--primary:\s*#a9c7ff/);
+  assert.match(css, /--background:\s*#05060a/);
+  assert.match(css, /--sidebar:\s*#090c11/);
+  assert.match(css, /Poppins/);
+  assert.match(css, /IBM Plex Mono/);
+});
+
+test("sidebar wordmark goes to Home and footer is not Unsloth", () => {
+  const source = readFileSync(
+    new URL("../src/components/app-sidebar.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /to=["']\/home["']/);
+  assert.match(source, /nav-row-home/);
+  assert.match(source, /t\(["']shell\.product["']\)/);
+  assert.doesNotMatch(
+    source,
+    />Unsloth</,
+    "sidebar must not render a literal Unsloth wordmark",
+  );
+});
+
+test("post-auth lands on Home, not Chat", () => {
+  const source = readFileSync(
+    new URL("../src/features/auth/session.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /return "\/home"/);
+  assert.doesNotMatch(source, /return "\/chat"/);
+});

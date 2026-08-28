@@ -75,6 +75,7 @@ export const es = {
       runOptions: "Opciones de ejecución",
     },
     navigation: {
+      home: "Inicio",
       newChat: "Nuevo chat",
       returnToChat: "Volver al chat",
       returnToChats: "Volver a {count} chats",

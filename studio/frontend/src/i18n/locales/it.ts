@@ -40,6 +40,7 @@ export const it = {
       runOptions: "Opzioni del run",
     },
     navigation: {
+      home: "Home",
       newChat: "Nuova chat",
       returnToChat: "Torna alla chat",
       returnToChats: "Torna alle {count} chat",

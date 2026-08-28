@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright 2026-present Ainfera Inc. See /studio/LICENSE.AGPL-3.0.
 
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   adaptBridgePlanToCard,
   type OutcomePlanCard,
   PlanCard,
   planCardHasHubId,
+  usePlanSessionStore,
 } from "@/features/home";
 import {
   applyPlanRecipe,
@@ -108,6 +110,16 @@ function TuneAgentRailContent({
   lastReason: string | null;
   setLastReason: (next: string | null) => void;
 }) {
+  const navigate = useNavigate();
+  const sessionCard = usePlanSessionStore((s) => s.card);
+  const handedToRail = usePlanSessionStore((s) => s.handedToRail);
+
+  useEffect(() => {
+    if (handedToRail && state.mode === "ask") {
+      bridge.setMode("plan");
+    }
+  }, [handedToRail, state.mode, bridge]);
+
   const trainEnabledByMode = useMemo(
     () => canStartTrainFromMode(state.mode),
     [state.mode],
@@ -119,24 +131,44 @@ function TuneAgentRailContent({
 
   function handleAccept() {
     // Accept never touches Engine. It only writes the recipe locally,
-    // through the applyPlanRecipe guard.
-    const result = applyPlanRecipe(state.plan, (_recipe) => {
+    // through the applyPlanRecipe guard. Prefer the Home session card when
+    // Tune Agent has not produced its own bridge plan yet.
+    const session = usePlanSessionStore.getState();
+    const planForApply =
+      state.plan ??
+      (session.card
+        ? { recipe: session.card.recipe as unknown as Record<string, unknown> }
+        : null);
+    const result = applyPlanRecipe(planForApply, (_recipe) => {
       // The recipe writer lives in the data-recipes feature. Wiring it in
       // is the next hop; for now we log the intent so an integrator can
       // see Accept fired without Engine.
     });
-    setLastReason(
-      result.applied
-        ? "Accepted: recipe applied locally."
-        : "Nothing to accept: Tune Agent has not produced a plan.",
-    );
+    if (!result.applied) {
+      setLastReason("Nothing to accept: Tune Agent has not produced a plan.");
+      return;
+    }
+    if (session.card) {
+      const follow = session.acceptStep(
+        session.card.steps.find((s) => s.id === "recipe") ??
+          session.card.steps[0],
+      );
+      if (follow.followWorkspace) {
+        void navigate({ to: "/studio" });
+        setLastReason(
+          "Accepted: recipe applied locally. Opening Train/Runs.",
+        );
+        return;
+      }
+    }
+    setLastReason("Accepted: recipe applied locally.");
   }
 
   function handleGrant() {
     // Grant is a separate control: an explicit human signal to allow
     // Agent-driven actions on this plan. Fails visibly when there's no
     // plan or Tune Agent is not connected.
-    if (state.plan === null) {
+    if (state.plan === null && usePlanSessionStore.getState().card === null) {
       setLastReason("Nothing to grant: Tune Agent has not produced a plan.");
       return;
     }
@@ -231,9 +263,10 @@ function TuneAgentRailContent({
     }
   }
 
-  const grantDisabled = state.plan === null || !state.connected;
+  const hasPlan = state.plan !== null || sessionCard !== null;
+  const grantDisabled = !hasPlan || !state.connected;
   const trainDisabled =
-    !trainEnabledByMode || !admission.admitted || state.plan === null;
+    !trainEnabledByMode || !admission.admitted || !hasPlan;
 
   return (
     <TuneAgentShell
@@ -284,9 +317,42 @@ function TuneAgentRailContent({
 
       <RailPlanSurface
         plan={state.plan}
+        sessionCard={sessionCard}
         connected={state.connected}
         runtimeAdmitted={state.runtimeAdmitted}
         onAcceptStep={handleAccept}
+        onSkipStep={(step) => {
+          const result = usePlanSessionStore.getState().dropStep(step.id);
+          setLastReason(result.reason);
+        }}
+        onDiscard={() => {
+          usePlanSessionStore.getState().discardPlan();
+          setLastReason("Plan discarded. Nothing ran.");
+        }}
+        onBranch={() => {
+          const branch = usePlanSessionStore.getState().branchPlan();
+          setLastReason(
+            branch
+              ? `Branched ${branch.id}. Neither plan runs.`
+              : "Nothing to branch.",
+          );
+        }}
+        onRevise={() => {
+          if (prompt.trim().length === 0) {
+            setLastReason("Describe an outcome to revise the plan.");
+            return;
+          }
+          const next = usePlanSessionStore.getState().revisePlan(prompt, {
+            parent: null,
+            dataset: null,
+            runtimeAdmitted: state.runtimeAdmitted,
+          });
+          setLastReason(
+            next
+              ? "Plan revised. Still a proposal — Accept applies it locally."
+              : "Describe an outcome to revise the plan.",
+          );
+        }}
       />
 
       {state.mode === "agent" && (
@@ -327,7 +393,7 @@ function TuneAgentRailContent({
         <RailButton
           label="Accept"
           onClick={handleAccept}
-          disabled={state.plan === null}
+          disabled={!hasPlan}
           hint={
             state.plan === null
               ? "Nothing to accept."
@@ -485,15 +551,53 @@ function ConnectionBadge({ connected }: { connected: boolean }) {
  */
 function RailPlanSurface({
   plan,
+  sessionCard,
   connected,
   runtimeAdmitted,
   onAcceptStep,
+  onSkipStep,
+  onDiscard,
+  onBranch,
+  onRevise,
 }: {
   plan: OutcomePlan | null;
+  sessionCard: OutcomePlanCard | null;
   connected: boolean;
   runtimeAdmitted: boolean;
   onAcceptStep: () => void;
+  onSkipStep?: (step: OutcomePlanCard["steps"][number]) => void;
+  onDiscard?: () => void;
+  onBranch?: () => void;
+  onRevise?: () => void;
 }) {
+  if (sessionCard !== null) {
+    if (planCardHasHubId(sessionCard)) {
+      return (
+        <section
+          className="mt-3 rounded-md border border-white/10 p-3 text-xs"
+          data-testid="tune-agent-plan-card-refused"
+          style={{ background: "var(--ai-panel)", color: "var(--ai-muted)" }}
+        >
+          Refused: session plan would have surfaced a Hub id. StudioTune never
+          sources runtimes or datasets from the Hub.
+        </section>
+      );
+    }
+    return (
+      <div className="mt-3" data-testid="tune-agent-plan-card">
+        <PlanCard
+          card={sessionCard}
+          handlers={{
+            onAccept: () => onAcceptStep(),
+            onSkip: onSkipStep,
+            onDiscard,
+            onBranch,
+            onRevise,
+          }}
+        />
+      </div>
+    );
+  }
   if (plan === null) {
     return (
       <section

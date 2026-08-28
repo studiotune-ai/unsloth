@@ -31,6 +31,12 @@ export type PlanCardHandlers = {
   onEdit?: (step: OutcomePlanStep) => void;
   onSkip?: (step: OutcomePlanStep) => void;
   onResolveClarification?: (id: OutcomePlanClarificationId) => void;
+  /** Discard the whole plan. Never calls Engine. */
+  onDiscard?: () => void;
+  /** Branch a second local plan without running either. */
+  onBranch?: () => void;
+  /** Rebuild the proposal from a revised prompt. */
+  onRevise?: () => void;
 };
 
 const STATUS_COLOR: Record<OutcomePlanStep["status"], string> = {
@@ -76,7 +82,52 @@ export function PlanCard({
           <PlanCardStepRow key={step.id} step={step} handlers={handlers} />
         ))}
       </ol>
+      <PlanCardRevisionBar handlers={handlers} />
     </section>
+  );
+}
+
+function PlanCardRevisionBar({ handlers }: { handlers?: PlanCardHandlers }) {
+  if (!handlers?.onDiscard && !handlers?.onBranch && !handlers?.onRevise) {
+    return null;
+  }
+  return (
+    <div
+      className="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-3"
+      data-testid="home-plan-revision-bar"
+      aria-label="Revise, branch, or discard this plan"
+    >
+      {handlers.onRevise ? (
+        <StepButton
+          label="Revise"
+          disabled={false}
+          onClick={handlers.onRevise}
+          testid="home-plan-revise"
+          statusColor="var(--revise-fg)"
+          hint="Rebuild this proposal from an edited prompt. Never calls Engine."
+        />
+      ) : null}
+      {handlers.onBranch ? (
+        <StepButton
+          label="Branch"
+          disabled={false}
+          onClick={handlers.onBranch}
+          testid="home-plan-branch"
+          statusColor="var(--evidence-fg)"
+          hint="Fork a second local plan. Neither plan runs."
+        />
+      ) : null}
+      {handlers.onDiscard ? (
+        <StepButton
+          label="Discard"
+          disabled={false}
+          onClick={handlers.onDiscard}
+          testid="home-plan-discard"
+          statusColor="var(--reject-fg)"
+          hint="Discard this plan. Nothing was trained."
+        />
+      ) : null}
+    </div>
   );
 }
 

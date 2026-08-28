@@ -75,6 +75,7 @@ export const ptBR = {
       runOptions: "Opções de execução",
     },
     navigation: {
+      home: "Início",
       newChat: "Novo chat",
       returnToChat: "Voltar ao chat",
       returnToChats: "Voltar aos {count} chats",

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright 2026-present the Unsloth AI Inc. team. All rights reserved. See /studio/LICENSE.AGPL-3.0
 
-import { isTauri } from "@/lib/api-base";
-
 import {
   AUTH_SESSION_CLEARED_EVENT,
   AUTH_SESSION_STORED_EVENT,
@@ -29,7 +27,7 @@ export function getAuthSessionEpoch(): number {
   return authSessionEpoch;
 }
 
-type PostAuthRoute = "/change-password" | "/chat";
+type PostAuthRoute = "/change-password" | "/home";
 
 function canUseStorage(): boolean {
   return typeof window !== "undefined";
@@ -97,7 +95,7 @@ export function clearAuthTokens(): void {
 
 // Flag stored as key presence (constant "1" or absence), not a derived boolean,
 // so CodeQL doesn't flow must_change_password into localStorage.setItem. The
-// value is a route hint (/change-password vs /chat), not a secret.
+// value is a route hint (/change-password vs /home), not a secret.
 export function mustChangePassword(): boolean {
   if (!canUseStorage()) return false;
   return localStorage.getItem(AUTH_MUST_CHANGE_PASSWORD_KEY) !== null;
@@ -115,7 +113,6 @@ export function setMustChangePassword(required: boolean): void {
 
 
 export function getPostAuthRoute(): PostAuthRoute {
-  if (isTauri) return "/chat";
   if (mustChangePassword()) return "/change-password";
-  return "/chat";
+  return "/home";
 }

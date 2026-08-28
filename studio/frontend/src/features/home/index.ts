@@ -20,3 +20,14 @@ export {
   type OutcomePlanStep,
   type OutcomePlanStepId,
 } from "./outcome-plan-builder";
+export {
+  EMPTY_PLAN_SESSION,
+  branchFromPlan,
+  planAllowsFollowWorkspace,
+  skipOptionalStep,
+  usePlanSessionStore,
+  type PlanBranch,
+  type PlanSessionActions,
+  type PlanSessionState,
+} from "./plan-session-store";
+

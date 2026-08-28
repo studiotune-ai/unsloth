@@ -31,16 +31,16 @@ const STORED_PALETTE: Record<Palette, Palette> = {
 };
 
 function readStoredTheme(): Theme {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return "dark";
   let stored: string | null = null;
   try {
     stored = window.localStorage.getItem(STORAGE_KEY);
   } catch {
-    return "system";
+    return "dark";
   }
   if (stored === "light" || stored === "dark" || stored === "system")
     return stored;
-  return "system";
+  return "dark";
 }
 
 function readStoredPalette(): Palette {
@@ -137,7 +137,7 @@ function getSnapshot(): Theme {
 }
 
 function getServerSnapshot(): Theme {
-  return "system";
+  return "dark";
 }
 
 // Snapshot the RESOLVED mode too: under "system" the theme string never

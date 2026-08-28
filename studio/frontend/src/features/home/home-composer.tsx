@@ -2,6 +2,7 @@
 // Copyright 2026-present Ainfera Inc. See /studio/LICENSE.AGPL-3.0.
 
 import { applyPlanRecipe } from "@/features/tune-agent";
+import { useNavigate } from "@tanstack/react-router";
 import type { FormEvent } from "react";
 import { useMemo, useState } from "react";
 import {
@@ -14,6 +15,7 @@ import {
   planCardHasHubId,
 } from "./outcome-plan-builder";
 import { PlanCard } from "./plan-card";
+import { usePlanSessionStore } from "./plan-session-store";
 
 /**
  * StudioTune Home composer — one prompt, one plan card.
@@ -67,6 +69,7 @@ export function HomeComposer({
   initialFacts,
   onAcceptStep,
 }: HomeComposerProps = {}) {
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [facts, setFacts] = useState<OutcomePlanFacts>(
     initialFacts ?? DEFAULT_FACTS,
@@ -99,11 +102,22 @@ export function HomeComposer({
       return;
     }
     setCard(nextCard);
+    usePlanSessionStore.getState().publishPlan(prompt, facts, nextCard);
     setLastReason(
       nextCard.clarifications.length === 0
-        ? "Plan ready. Accept applies the recipe locally — never calls Engine."
+        ? "Plan ready. Conversation moves to Tune Agent. Accept applies the recipe locally — never calls Engine."
         : `Plan drafted with ${nextCard.clarifications.length} clarification(s). Resolve them before Accept.`,
     );
+  }
+
+  function followWorkspaceIfReady(nextCard: OutcomePlanCard) {
+    const follow = usePlanSessionStore.getState().acceptStep(
+      nextCard.steps.find((s) => s.id === "recipe") ?? nextCard.steps[0],
+    );
+    if (follow.followWorkspace) {
+      void navigate({ to: "/studio" });
+    }
+    return follow.followWorkspace;
   }
 
   function handleAccept(step: OutcomePlanStep) {
@@ -112,6 +126,7 @@ export function HomeComposer({
     }
     if (onAcceptStep) {
       onAcceptStep(step, card);
+      usePlanSessionStore.getState().acceptStep(step);
       setLastReason(`Accepted ${step.label} — applied locally.`);
       return;
     }
@@ -126,11 +141,57 @@ export function HomeComposer({
         // keeps the Accept path visible for integrators until then.
       },
     );
+    if (outcome.applied) {
+      const followed = followWorkspaceIfReady(card);
+      setLastReason(
+        followed
+          ? `Accepted ${step.label} — recipe applied locally. Opening Train/Runs.`
+          : `Accepted ${step.label} — recipe applied locally.`,
+      );
+      return;
+    }
+    setLastReason("Nothing to accept: plan has no recipe.");
+  }
+
+  function handleSkip(step: OutcomePlanStep) {
+    const store = usePlanSessionStore.getState();
+    const result = store.dropStep(step.id);
+    if (result.ok && store.card) {
+      setCard(usePlanSessionStore.getState().card);
+    }
+    setLastReason(result.reason);
+  }
+
+  function handleDiscard() {
+    usePlanSessionStore.getState().discardPlan();
+    setCard(null);
+    setLastReason("Plan discarded. Nothing ran.");
+  }
+
+  function handleBranch() {
+    const branch = usePlanSessionStore.getState().branchPlan();
     setLastReason(
-      outcome.applied
-        ? `Accepted ${step.label} — recipe applied locally.`
-        : "Nothing to accept: plan has no recipe.",
+      branch
+        ? `Branched ${branch.id}. Neither plan runs until you Accept.`
+        : "Nothing to branch.",
     );
+  }
+
+  function handleRevise() {
+    const next = usePlanSessionStore.getState().revisePlan(prompt, facts);
+    if (next === null) {
+      setLastReason("Describe an outcome to revise the plan.");
+      return;
+    }
+    if (planCardHasHubId(next)) {
+      setCard(null);
+      setLastReason(
+        "Refused: revised plan would have surfaced a Hub id. StudioTune never sources runtimes or datasets from the Hub.",
+      );
+      return;
+    }
+    setCard(next);
+    setLastReason("Plan revised. Still a proposal — Accept applies it locally.");
   }
 
   function handleResolveClarification(id: OutcomePlanClarificationId) {
@@ -165,9 +226,9 @@ export function HomeComposer({
           StudioTune
         </p>
         <p className="text-sm" style={{ color: "var(--ai-muted)" }}>
-          Describe the outcome you want. StudioTune drafts a bounded local plan
-          (inspect → recipe → admit → train → compare → export) before anything
-          runs. No Engine, no Hub, no cloud GPUs.
+          {card === null
+            ? "Describe the outcome you want. StudioTune drafts a bounded local plan (inspect → recipe → admit → train → compare → export) before anything runs. No Engine, no Hub, no cloud GPUs."
+            : "Plan is the canvas. Keep revising here, or continue in the Tune Agent rail. Accept applies locally — never trains, never spends, never fetches from the Hub."}
         </p>
       </header>
 
@@ -264,7 +325,12 @@ export function HomeComposer({
           card={card}
           handlers={{
             onAccept: handleAccept,
+            onSkip: handleSkip,
+            onEdit: handleRevise,
             onResolveClarification: handleResolveClarification,
+            onDiscard: handleDiscard,
+            onBranch: handleBranch,
+            onRevise: handleRevise,
           }}
         />
       )}
