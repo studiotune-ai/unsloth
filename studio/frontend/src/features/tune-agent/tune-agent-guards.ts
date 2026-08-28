@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright 2026-present Ainfera Inc. See /studio/LICENSE.AGPL-3.0.
 
-import type { OutcomePlan, TuneAgentMode } from "./tune-agent-types";
+import type { TuneAgentMode } from "./tune-agent-types";
+
+/**
+ * Minimal shape `applyPlanRecipe` cares about: a plan is anything that
+ * carries a `recipe` payload. Widening this beyond `OutcomePlan` lets the
+ * Home composer's own plan card go through the same guard without having
+ * to invent a second Accept path.
+ */
+export type PlanWithRecipe = { recipe: Record<string, unknown> };
 
 /**
  * Tune Agent — mode guards.
@@ -37,7 +45,7 @@ export type ApplyRecipeFn = (recipe: Record<string, unknown>) => void;
  * quietly reaches for the Engine has to change the signature here first.
  */
 export function applyPlanRecipe(
-  plan: OutcomePlan | null,
+  plan: PlanWithRecipe | null,
   applyRecipe: ApplyRecipeFn,
 ): { applied: boolean; reason?: string } {
   if (plan === null) {

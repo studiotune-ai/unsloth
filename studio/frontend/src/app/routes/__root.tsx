@@ -200,6 +200,7 @@ function CredentialBootstrapGate({ children }: { children: ReactNode }) {
 const CHAT_ONLY_ALLOWED = new Set([
   "/",
   "/chat",
+  "/home",
   "/projects",
   "/hub",
   "/login",
