@@ -1,0 +1,35 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-010-START-2026-08-28-2055-WIB",
+  "ticket": "APP-010",
+  "linear": "AIN-952",
+  "generatedAtWib": "2026-08-28 20:56:44 WIB",
+  "lock": "AIN-952: extend desktop-app/src/app/data-recipes-view.js. Do not invent a second recipe UI. Do not pull remote datasets. Do not treat fixture compare as quality.",
+  "started": true,
+  "module_on_disk": "desktop-app/src/app/data-recipes-view.js",
+  "tests": {
+    "path": "desktop-app/tests/frontend/app010-local-files-recipe.test.mjs",
+    "passed": 8,
+    "failed": 0,
+    "notes": "hashed local-files proposal, Hub paths refused, accept is not approve/run, reject clears proposal only"
+  },
+  "host_unsloth": {
+    "route": "/data-recipes",
+    "kind": "Unsloth Dexie recipe studio (unsloth-data-recipes)",
+    "ain952_module_ported": false,
+    "plan_card": "Accept/Skip present; no Reject label",
+    "compare_route": "/compare",
+    "compare_quality_claimed": false
+  },
+  "done_when_still_open": [
+    "Local files proposed as a dataset recipe with a hash on the live Unsloth host (module exists on desktop-app only this hop).",
+    "Plan review accept/reject on the live window (Accept/Skip exist; Reject label missing).",
+    "Parent vs candidate compare as primary post-run surface (route exists; quality unproven).",
+    "High-stakes only: approve, run, export, delete."
+  ],
+  "train_this_hop": false,
+  "hub_contacted": false,
+  "second_recipe_ui_invented": false,
+  "beta_ready_claim": false,
+  "next_safe_action": "HOLD"
+}
