@@ -2452,14 +2452,15 @@ SIDEBAR_MENU_ITEM_DEFAULTS = {
 # sends every id on each save, so a missing id 422s the whole personalization PUT, and a legacy
 # record that predates sidebarNav is served this default as if it were an explicit remote choice.
 SIDEBAR_NAV_ITEM_DEFAULTS = {
-    "hub": True,
-    "projects": True,
-    "images": True,
-    "video": True,
-    "audio": False,
     "train": True,
-    "recipes": False,
-    "export": False,
+    "recipes": True,
+    "export": True,
+    "compare": True,
+    "projects": False,
+    "hub": False,
+    "images": False,
+    "video": False,
+    "audio": False,
     "api": False,
 }
 

@@ -2084,6 +2084,21 @@ export function AppSidebar() {
         preloadSilently(router.preloadRoute({ to: "/api-monitor" }));
       },
     },
+    // StudioTune Compare: parent vs candidate. HOLD placeholder in this hop;
+    // the page renders an honest empty state until fixtures land, and stays
+    // honest about reference-vs-quality when fixtures are used.
+    compare: {
+      icon: TestTubeOutlineIcon,
+      label: t("shell.navigation.compare"),
+      active: pathname === "/compare" || pathname.startsWith("/compare/"),
+      onClick: () => {
+        navigate({ to: "/compare" });
+        closeMobileIfOpen();
+      },
+      onIntent: () => {
+        preloadSilently(router.preloadRoute({ to: "/compare" }));
+      },
+    },
   };
   const unpinnedNavIds = sidebarNav
     .filter((item) => !item.pinned)
@@ -3441,11 +3456,16 @@ export function AppSidebar() {
               )}
             >
                 <Link
-                  to="/chat"
+                  // StudioTune leads with Home (Clusy-style composer), not Chat.
+                  to="/home"
                   onClick={(event) => {
-                    event.preventDefault();
-                    if (chatDisabled) return;
-                    openNewChat(null);
+                    if (chatOnlyMeasured) {
+                      // Chat-only host: /studio is grayed out. Preserve the
+                      // legacy behavior so this affordance keeps working.
+                      event.preventDefault();
+                      if (chatDisabled) return;
+                      openNewChat(null);
+                    }
                   }}
                   className={cn(
                     // min-w-0 so a narrow sidebar truncates the wordmark instead of pushing the search icon over.
@@ -3460,11 +3480,17 @@ export function AppSidebar() {
                       base + (root scale - 1) * 8px. Exact base sizes at 16px. */}
                   <img
                     src="/circle-logo-small.png"
-                    alt="Unsloth"
+                    alt="StudioTune"
                     className="relative top-px h-[calc(22px+0.5rem*var(--ui-font-scale,1))] w-[calc(22px+0.5rem*var(--ui-font-scale,1))] shrink-0 rounded-full object-cover"
                   />
-                  <span className="relative -top-px truncate font-heading text-[calc(13px+0.5rem*var(--ui-font-scale,1))] font-semibold tracking-[0em] leading-tight text-black dark:text-white dark:tracking-[0.02em]">
-                    unsloth
+                  <span
+                    // StudioTune wordmark. Renders in the display serif via
+                    // the .studiotune-wordmark class (falls back to the
+                    // heading font on installs without the display face).
+                    className="studiotune-wordmark relative -top-px truncate text-[calc(13px+0.5rem*var(--ui-font-scale,1))] font-semibold tracking-[0em] leading-tight text-black dark:text-white dark:tracking-[0.02em]"
+                    data-studiotune-wordmark="true"
+                  >
+                    StudioTune
                   </span>
                   <span className="nav-badge ml-0.5 inline-flex shrink-0 items-center justify-center rounded-full border border-nav-beta-border px-[5px] pt-[3px] pb-[2px] text-[calc(0.5rem*var(--ui-font-scale,1))] font-medium leading-none tracking-[0.04em] text-nav-fg-muted antialiased subpixel-antialiased shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
                     {t("shell.beta")}
@@ -3645,8 +3671,21 @@ export function AppSidebar() {
 
           <SidebarGroupContent>
             <SidebarMenu>
+              <NavItem
+                icon={LayoutAlignLeftIcon}
+                label={t("shell.navigation.home")}
+                active={pathname === "/home" || pathname.startsWith("/home/")}
+                testId="nav-row-home"
+                onClick={() => {
+                  navigate({ to: "/home" });
+                  closeMobileIfOpen();
+                }}
+                onIntent={() => {
+                  preloadSilently(router.preloadRoute({ to: "/home" }));
+                }}
+              />
               {/* Order and pin state come from Settings -> Appearance ->
-                  Sidebar navigation. */}
+                  Sidebar navigation. Experiment workspace stays one rail. */}
               {inlineNavIds.map((id) => {
                 const row = navRows[id];
                 // A row whose capability is still unmeasured spins instead of blacking out.
@@ -4370,7 +4409,7 @@ export function AppSidebar() {
                       pr on the button reserves room for the settings cog */}
                   <div className="flex min-w-0 flex-1 flex-col gap-px leading-tight group-data-[collapsible=icon]:hidden">
                     <span className="truncate font-heading text-ui-13p5 tracking-[0.025em] dark:tracking-[0.04em] font-semibold text-nav-fg">{displayTitle}</span>
-                    <span className="truncate text-ui-11p5 tracking-nav text-muted-foreground">Unsloth</span>
+                    <span className="truncate text-ui-11p5 tracking-nav text-muted-foreground">{t("shell.product")}</span>
                   </div>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>

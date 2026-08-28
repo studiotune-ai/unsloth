@@ -1,0 +1,37 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-008-FREEZE-NOT-BETA-2026-08-28-2051-WIB",
+  "ticket": "APP-008",
+  "generatedAtWib": "2026-08-28 20:53:00 WIB",
+  "commit": "1e383fac57f38390cd341e5c44ac13cd212695ae",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "beta_ready_claim": false,
+  "betaReadyClaim": false,
+  "claim_ceiling": "APP-008 freeze only. Not a beta-ready claim. Not a signed or notarized ship. Not a merge.",
+  "launch": {
+    "direct_exec_proven": true,
+    "host_pid": 30694,
+    "open_app": "Code Signature Invalid after unsigned binary swap. Expected without Developer ID.",
+    "signed": false,
+    "notarized": false,
+    "developer_id": false
+  },
+  "sidecar": {
+    "child_argv_proven": "Contents/MacOS/tune-agent --stdio-json",
+    "sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+    "frontend_start_binary": "",
+    "empty_start_is_freeze": true
+  },
+  "unproven": [
+    "Developer ID application signing + Apple notarization + stapled ticket (user-gated).",
+    "open StudioTune.app cold-start of a sealed unsigned bundle (Code Signature Invalid after binary swap; direct-exec only this hop).",
+    "Second Mac cold-start without dev tooling.",
+    "Window PlanCard paint of HOLD\u00b7REVISE (no screenshot this hop).",
+    "Live parent-vs-candidate quality compare."
+  ],
+  "train_this_hop": false,
+  "hub_contacted": false,
+  "merged": false,
+  "next_safe_action": "HOLD"
+}

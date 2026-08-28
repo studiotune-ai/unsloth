@@ -37,6 +37,9 @@ const ITEM_META: Record<
   recipes: { icon: ChefHatIcon, labelKey: "shell.navigation.recipes" },
   export: { icon: DownloadSquare01Icon, labelKey: "shell.navigation.export" },
   api: { icon: Globe02Icon, labelKey: "shell.navigation.api" },
+  // StudioTune Compare — parent vs candidate. Shares the flask/test-tube
+  // glyph with Train so the studio group reads together in the customizer.
+  compare: { icon: TestTubeOutlineIcon, labelKey: "shell.navigation.compare" },
 };
 
 function FixedRow({ icon, label }: { icon: IconSvgElement; label: string }) {

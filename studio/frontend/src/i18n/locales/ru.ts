@@ -54,9 +54,9 @@ export const ru = {
     shutdown: "Выключить",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "Меню аккаунта {name}",
     updateAvailable: "Доступно обновление",
     resize: {
@@ -75,6 +75,7 @@ export const ru = {
       runOptions: "Параметры запуска",
     },
     navigation: {
+      home: "Главная",
       newChat: "Новый чат",
       returnToChat: "Вернуться к чату",
       returnToChats: "Вернуться к чатам ({count})",

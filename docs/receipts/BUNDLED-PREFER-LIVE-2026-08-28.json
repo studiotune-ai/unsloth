@@ -1,0 +1,56 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "BUNDLED-PREFER-LIVE-2026-08-28",
+  "generatedAtWib": "2026-08-28 20:50:15 WIB",
+  "proven": true,
+  "child_argv_proven_bundled": true,
+  "host_pid": 30694,
+  "replaced_pid": 27287,
+  "previous_fail_host_pid": 27287,
+  "previous_fail_note": "Prior hop FAIL: RealSidecarEnv used trait default None so child was ~/.studiotune/tune-agent --stdio-json.",
+  "child_argv": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/tune-agent --stdio-json",
+  "spawn": {
+    "seen_at_wib": "2026-08-28 20:49:15 WIB",
+    "children": [
+      {
+        "pid": 30767,
+        "ppid": 30694,
+        "argv": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/tune-agent --stdio-json"
+      },
+      {
+        "pid": 30768,
+        "ppid": 30694,
+        "argv": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/tune-agent --stdio-json"
+      },
+      {
+        "pid": 30769,
+        "ppid": 30768,
+        "argv": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/tune-agent --stdio-json"
+      },
+      {
+        "pid": 30770,
+        "ppid": 30767,
+        "argv": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/tune-agent --stdio-json"
+      }
+    ],
+    "lifetime": "ephemeral_stdio_ping",
+    "binary_path_used": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/tune-agent",
+    "bundled_path": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/tune-agent",
+    "note": "PROVEN this hop after RealSidecarEnv.bundled_sidecar_dir override. Live child argv is Contents/MacOS/tune-agent --stdio-json."
+  },
+  "host_binary_sha256": "4791fca74364b5613761b0c4af3bcac45fca3e043b26651c3d822fef0f0369c2",
+  "sidecar_sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+  "home_sidecar_sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+  "rebuild": {
+    "vite": "ok empty-default in dist from prior hop",
+    "cargo": "ok cargo build --release --offline --bin unsloth-studio in 36.04s",
+    "copied_into_existing_app": true,
+    "sidecar_preserved": true,
+    "open_app": "not used. Direct exec of Contents/MacOS/unsloth-studio."
+  },
+  "window_plancard_paint": "unproven",
+  "train_this_hop": false,
+  "beta_ready_claim": false,
+  "next_safe_action": "HOLD",
+  "git_commit": null
+}

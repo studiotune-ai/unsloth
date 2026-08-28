@@ -51,6 +51,18 @@ import {
   primeRecipeCache,
   useRecipes,
 } from "../data/recipes-db";
+import {
+  LocalFilesProposalRefused,
+  acceptLocalFilesProposal,
+  proposeLocalFiles,
+  rejectLocalFilesProposal,
+  type LocalFileRef,
+  type LocalFilesProposal,
+} from "../data/local-files-proposal";
+import {
+  bindAcceptedLocalFilesToHome,
+  clearAcceptedLocalFilesFromHome,
+} from "../data/local-files-home-bind";
 import { LEARNING_RECIPES } from "../learning-recipes";
 
 type TemplateCard = {
@@ -310,6 +322,31 @@ function LearningRecipeCards({
   );
 }
 
+
+async function hexSha256(bytes: ArrayBuffer): Promise<string> {
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) {
+    throw new Error("SubtleCrypto unavailable");
+  }
+  const digest = await subtle.digest("SHA-256", bytes);
+  const view = new Uint8Array(digest);
+  let out = "";
+  for (let i = 0; i < view.length; i += 1) {
+    out += view[i].toString(16).padStart(2, "0");
+  }
+  return out;
+}
+
+async function fileToLocalRef(file: File): Promise<LocalFileRef> {
+  const path = file.webkitRelativePath || file.name;
+  const buf = await file.arrayBuffer();
+  return {
+    path,
+    bytes: file.size,
+    sha256: await hexSha256(buf),
+  };
+}
+
 export function DataRecipesPage(): ReactElement {
   const navigate = useNavigate();
   const { recipes, ready } = useRecipes();
@@ -318,6 +355,10 @@ export function DataRecipesPage(): ReactElement {
   const [loadingTemplateId, setLoadingTemplateId] = useState<string | null>(
     null,
   );
+  const [localFilesProposal, setLocalFilesProposal] =
+    useState<LocalFilesProposal | null>(null);
+  const [localFilesBusy, setLocalFilesBusy] = useState(false);
+  const localFilesInputRef = useRef<HTMLInputElement>(null);
   const reloadReadySent = useRef(false);
 
   useEffect(() => {
@@ -403,7 +444,49 @@ export function DataRecipesPage(): ReactElement {
     await deleteRecipe(recipeId);
   }
 
-  const isBusy = creatingRecipe || Boolean(loadingTemplateId);
+  async function onLocalFilesPicked(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> {
+    const list = event.target.files;
+    event.target.value = "";
+    if (!list || list.length === 0) {
+      return;
+    }
+    setLocalFilesBusy(true);
+    try {
+      const files = await Promise.all(Array.from(list, fileToLocalRef));
+      const proposal = await proposeLocalFiles({ files });
+      setLocalFilesProposal(proposal);
+    } catch (error) {
+      setLocalFilesProposal(null);
+      const detail =
+        error instanceof LocalFilesProposalRefused
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : undefined;
+      toastError("Local files proposal refused.", detail);
+    } finally {
+      setLocalFilesBusy(false);
+    }
+  }
+
+  function acceptLocalFiles(): void {
+    if (localFilesProposal === null) {
+      return;
+    }
+    const next = acceptLocalFilesProposal(localFilesProposal);
+    setLocalFilesProposal(next);
+    bindAcceptedLocalFilesToHome(next);
+  }
+
+  function rejectLocalFiles(): void {
+    setLocalFilesProposal(rejectLocalFilesProposal(localFilesProposal));
+    clearAcceptedLocalFilesFromHome();
+  }
+
+  const isBusy =
+    creatingRecipe || Boolean(loadingTemplateId) || localFilesBusy;
 
   return (
     <div className="min-h-[calc(100dvh-var(--studio-titlebar-height,0px))] bg-background">
@@ -445,9 +528,67 @@ export function DataRecipesPage(): ReactElement {
                 <HugeiconsIcon icon={CookBookIcon} className="size-4" />
                 Start from Learning Recipe
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  localFilesInputRef.current?.click();
+                }}
+              >
+                <HugeiconsIcon icon={DocumentAttachmentIcon} className="size-4" />
+                From local files
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        <input
+          ref={localFilesInputRef}
+          type="file"
+          multiple={true}
+          className="hidden"
+          data-testid="data-recipes-local-files-input"
+          onChange={(event) => {
+            onLocalFilesPicked(event).catch(() => undefined);
+          }}
+        />
+
+        {localFilesProposal ? (
+          <div
+            className="mt-6 rounded-xl border bg-card px-4 py-3"
+            data-testid="data-recipes-local-files-proposal"
+          >
+            <p className="text-sm font-medium text-foreground">
+              Local files proposal
+            </p>
+            <p className="mt-1 font-mono text-xs text-muted-foreground break-all">
+              {localFilesProposal.hash}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {localFilesProposal.files.length} file
+              {localFilesProposal.files.length === 1 ? "" : "s"} · status=
+              {localFilesProposal.status} · authority=false
+            </p>
+            <div className="mt-3 flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                data-testid="data-recipes-local-files-accept"
+                disabled={localFilesProposal.status === "accepted"}
+                onClick={acceptLocalFiles}
+              >
+                Accept
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                data-testid="data-recipes-local-files-reject"
+                onClick={rejectLocalFiles}
+              >
+                Reject
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
         {ready ? (
           recipes.length === 0 ? (

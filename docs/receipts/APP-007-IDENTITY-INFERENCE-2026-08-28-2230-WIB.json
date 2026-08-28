@@ -1,0 +1,26 @@
+{
+  "prompt": "Reply with the single word ping.",
+  "parent_text": "\n\nI have a long story to tell you about my life.\n\nI have a",
+  "candidate_text": "\n\nI have a long story to tell you about my life.\n\nI have a",
+  "parent_sha_context": {
+    "snapshot_path": "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+    "blob_count": 9
+  },
+  "adapter_sha": "4842bc09742a8bc72db1388d375fe025179697ded5deba8ddaccfc5a5b9ea8b3",
+  "adapter_dir": "/tmp/studiotune-cli-007/adapter",
+  "max_tokens": 16,
+  "temp": 0.0,
+  "trained": false,
+  "hub_fetch": false,
+  "quality_claimed": false,
+  "compare_quality_claimed": false,
+  "authority": false,
+  "beta_ready_claim": false,
+  "host": "Mac Studio",
+  "mlx_lm_version": "0.31.3",
+  "python": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13",
+  "python_resolved": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13",
+  "generate_path": "mlx_lm.generate.generate",
+  "kind": "identity",
+  "elapsed_s": 1.446
+}

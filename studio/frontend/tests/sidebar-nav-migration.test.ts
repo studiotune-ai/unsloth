@@ -82,7 +82,9 @@ test("the untouched pre-Audio version-5 sidebar adopts the Audio-aware default",
   );
 });
 
-test("a customized version-5 sidebar keeps its order and only gains Audio", () => {
+test("a customized version-5 sidebar keeps its order and gains later ids", () => {
+  // A user-arranged v5 layout. After sanitization, ids added in later
+  // versions land at the end with their StudioTune default (audio, compare).
   const customizedV5: SidebarNavItemPref[] = [
     { id: "projects", pinned: true },
     { id: "hub", pinned: true },
@@ -99,33 +101,46 @@ test("a customized version-5 sidebar keeps its order and only gains Audio", () =
     migrateShippedSidebarNavDefault(customization, 5, 7),
     customization,
   );
+  // Every id that shipped after v5 lands at the tail. sanitizeSidebarNav
+  // walks SIDEBAR_NAV_ITEM_IDS in order (train, recipes, export, compare,
+  // projects, hub, images, video, audio, api), so the appended ids come
+  // out in that same order — compare first, then audio.
   assert.deepEqual(
     customization.sidebarNav.map((item) => item.id),
-    [...customizedV5.map((item) => item.id), "audio"],
+    [...customizedV5.map((item) => item.id), "compare", "audio"],
   );
-  assert.equal(customization.sidebarNav.at(-1)?.pinned, false);
+  // audio still defaults to unpinned; compare is pinned by the StudioTune
+  // default because it is a primary-rail row.
+  const audio = customization.sidebarNav.find((item) => item.id === "audio");
+  const compare = customization.sidebarNav.find((item) => item.id === "compare");
+  assert.equal(audio?.pinned, false);
+  assert.equal(compare?.pinned, true);
 });
 
 test("a user-arranged sidebar survives the migration", () => {
+  // Pin an id the StudioTune default leaves unpinned (api). That change
+  // guarantees the stored layout differs from every shipped default, so the
+  // migration must return the same object rather than replacing it.
   const customization = sanitizeCustomization({
     sidebarNav: DEFAULT_CUSTOMIZATION.sidebarNav.map((item) =>
-      item.id === "recipes" ? { ...item, pinned: true } : item,
+      item.id === "api" ? { ...item, pinned: true } : item,
     ),
   });
   assert.strictEqual(
-    migrateShippedSidebarNavDefault(customization, 4, 7),
+    migrateShippedSidebarNavDefault(customization, 4, 8),
     customization,
   );
 });
 
-test("an install sitting on the version-6 default picks Video up", () => {
-  // The layout this change replaces. Untouched, so it adopts the new default
-  // rather than being read as a deliberate choice to keep Video under More.
+test("an install sitting on the version-6 default adopts the StudioTune rail", () => {
+  // The layout this change replaces. Untouched, so it adopts the StudioTune
+  // rebrand default (Train / Recipes / Export / Compare) rather than being
+  // read as a deliberate choice to keep the chat-era rail.
   const customization = sanitizeCustomization({ sidebarNav: shippedLayouts[4] });
-  const migrated = migrateShippedSidebarNavDefault(customization, 6, 7);
+  const migrated = migrateShippedSidebarNavDefault(customization, 6, 8);
   assert.deepEqual(migrated.sidebarNav, DEFAULT_CUSTOMIZATION.sidebarNav);
   const ids = migrated.sidebarNav.filter((item) => item.pinned).map((i) => i.id);
-  assert.deepEqual(ids, ["hub", "projects", "images", "video", "train"]);
+  assert.deepEqual(ids, ["train", "recipes", "export", "compare"]);
 });
 
 test("a shipped-looking layout chosen after migration is preserved", () => {

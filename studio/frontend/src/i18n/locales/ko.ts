@@ -52,9 +52,9 @@ export const ko = {
     shutdown: "종료",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "{name} 계정 메뉴",
     updateAvailable: "업데이트 사용 가능",
     resize: {
@@ -73,6 +73,7 @@ export const ko = {
       runOptions: "학습 옵션",
     },
     navigation: {
+      home: "홈",
       newChat: "새 채팅",
       returnToChat: "채팅으로 돌아가기",
       returnToChats: "채팅 {count}개로 돌아가기",

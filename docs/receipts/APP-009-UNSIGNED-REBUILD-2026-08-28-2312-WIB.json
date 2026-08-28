@@ -1,0 +1,40 @@
+{
+  "id": "APP-009-UNSIGNED-REBUILD-2026-08-28-2312-WIB",
+  "hop": "APP-009",
+  "title": "Unsigned rebuild \u2014 PlanCard parent seed in running window",
+  "timestamp_wib": "2026-08-28 23:12 WIB",
+  "repo": "studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": 1,
+  "head": "0dcf90c58ede24c86fecdfe2142009850351c0e6",
+  "head_short": "0dcf90c58",
+  "host_sha256": "fa54a65ad029f2507178628e73d30a90956a9f8b67637718dd871d5654dabdb9",
+  "sidecar_sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+  "embedded_index": "index-cKWUJXvW.js",
+  "embedded_parent_seed_hits": 1,
+  "launch": {
+    "mode": "direct-exec",
+    "pid": 9212,
+    "alive": true,
+    "open_app": "Code Signature Invalid expected without Developer ID"
+  },
+  "dist": "index-cKWUJXvW.js",
+  "parent_seed": "local Qwen snapshot a5339a4131 (CLI007_RETAINED.parentSnapshotDir)",
+  "dataset_admit": "still empty",
+  "accept": "applyPlanRecipe only",
+  "train_this_hop": false,
+  "hub_contacted": false,
+  "sign_this_hop": false,
+  "notarize_this_hop": false,
+  "publish_this_hop": false,
+  "merge_desktop_app_11": false,
+  "pixel_proven": false,
+  "beta_ready_claim": false,
+  "verdict": "hold",
+  "notes": [
+    "Source APP-009 seed was at 0dcf90c58; running binary was APP-007 (22:49) behind it.",
+    "Vite rebuild + cargo --release --offline + adhoc binary swap + direct-exec relaunch.",
+    "Sidecar unchanged sha256 25b9f4e6.",
+    "User-gated leftovers unchanged: Developer ID, notarize, second Mac."
+  ]
+}

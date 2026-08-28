@@ -6,9 +6,11 @@
 @import "shadcn/tailwind.css";
 @import "streamdown/styles.css";
 @import "./features/hub/hub.css";
+/* StudioTune brand tokens overlay. Layered after the shadcn base so the
+ * StudioTune-specific --ai-* and status colors take precedence, but before
+ * feature CSS so the Tune Agent rail and wordmark can read them. */
+@import "./brand/studiotune-brand.css";
 @import "@fontsource-variable/figtree";
-@import "@fontsource-variable/space-grotesk";
-@import "@fontsource-variable/inter";
 @import "tw-shimmer";
 @plugin "@toolwind/corner-shape";
 @source "../node_modules/streamdown/dist/*.js";
@@ -135,30 +137,6 @@
 
 
 
-@font-face {
-	font-family: "Hellix";
-	src: url("/fonts/Hellix-Regular.woff") format("woff");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Hellix";
-	src: url("/fonts/Hellix-Medium.woff") format("woff");
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Hellix";
-	src: url("/fonts/Hellix-SemiBold.woff2") format("woff2"),
-		url("/fonts/Hellix-SemiBold.woff") format("woff");
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
-}
 
 @font-face {
 	font-family: "Fira Code";
@@ -185,7 +163,7 @@
 	--card-foreground: oklch(0.1281 0.0179 169.2764);
 	--popover: oklch(1 0 0);
 	--popover-foreground: oklch(0.1281 0.0179 169.2764);
-	--primary: #17b88b;
+	--primary: #a9c7ff;
 	--primary-foreground: oklch(1 0 0);
 	--secondary: oklch(0.9596 0.0275 167.8295);
 	--secondary-foreground: oklch(0.2868 0.0649 159.9823);
@@ -207,7 +185,7 @@
 	   soft shade; selected state uses the deeper one (still never black). */
 	--ring-soft: color-mix(in srgb, var(--foreground) 22%, var(--border));
 	--ring-select: color-mix(in srgb, var(--foreground) 48%, var(--border));
-	--chart-1: #17b88b;
+	--chart-1: #a9c7ff;
 	--chart-2: oklch(0.694 0.1395 136.6059);
 	--chart-3: oklch(0.7014 0.1193 197.5897);
 	--chart-4: oklch(0.6926 0.1112 346.5775);
@@ -217,17 +195,17 @@
 	   the separator now that the right-edge divider is gone. */
 	--sidebar: #ffffff;
 	--sidebar-foreground: oklch(0.1281 0.0179 169.2764);
-	--sidebar-primary: #17b88b;
+	--sidebar-primary: #a9c7ff;
 	--sidebar-primary-foreground: oklch(1 0 0);
 	--sidebar-accent: #ececec;
 	--sidebar-accent-foreground: #262626;
 	--sidebar-border: #f2f2f2;
 	--sidebar-ring: #262626;
 	--destructive-foreground: oklch(1 0 0);
-	--font-sans: "Inter Variable", ui-sans-serif, sans-serif, system-ui;
-	--font-heading: "Hellix", "Space Grotesk Variable", var(--font-sans);
-	--font-serif: Source Serif 4, serif;
-	--font-mono: JetBrains Mono, monospace;
+	--font-sans: "Poppins", "Poppins Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "Poppins", "Poppins Variable", var(--font-sans);
+	--font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+	--font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
 	--shadow-color: hsl(0 0% 0%);
 	--shadow-opacity: 0;
 	--shadow-blur: 0px;
@@ -303,7 +281,7 @@
 	/* Status color for meaning-carrying marks (verified badges, token
 	   indicators). Pinned to the brand green in every palette and mode so
 	   the signal never changes with the theme. */
-	--verified: #17b88b;
+	--verified: #5be39b;
 
 	/* The authored typography tokens use a 16px CSS base; the product default
 	   is 15px. An explicit user preference overrides this inline. */
@@ -350,7 +328,7 @@
 	--card-foreground: #ececec;
 	--popover: #212121;
 	--popover-foreground: #ececec;
-	--primary: #17b88b;
+	--primary: #a9c7ff;
 	--primary-foreground: oklch(1 0 0);
 	--secondary: #242424;
 	--secondary-foreground: #ececec;
@@ -377,7 +355,7 @@
 	   the separator. */
 	--sidebar: #1f1f1f;
 	--sidebar-foreground: #ececec;
-	--sidebar-primary: #17b88b;
+	--sidebar-primary: #a9c7ff;
 	--sidebar-primary-foreground: oklch(1 0 0);
 	--sidebar-accent: #2a2a2a;
 	--sidebar-accent-foreground: #ececec;
@@ -386,9 +364,10 @@
 	--destructive-foreground: oklch(1 0 0);
 	/* Match light's radius so every rounded-* element is the same in both themes. */
 	--radius: 1.1rem;
-	--font-sans: "Inter Variable", ui-sans-serif, sans-serif, system-ui;
-	--font-serif: Source Serif 4, serif;
-	--font-mono: JetBrains Mono, monospace;
+	--font-sans: "Poppins", "Poppins Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "Poppins", "Poppins Variable", var(--font-sans);
+	--font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+	--font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
 	--shadow-color: hsl(0 0% 0%);
 	--shadow-opacity: 0;
 	--shadow-blur: 0px;
@@ -1085,9 +1064,9 @@ html[data-chat-font] .aui-root {
 		height: var(--icon-size);
 	}
 
-	/* Pins Inter across themes; parent `font-heading` resolves to Geist in dark. */
+	/* Pins Poppins across themes so nav chips match the StudioTune UI face. */
 	.nav-badge {
-		font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+		font-family: "Poppins", "Poppins Variable", ui-sans-serif, system-ui, sans-serif;
 	}
 
 	.sidebar-nav-btn {
@@ -1459,7 +1438,7 @@ html[data-chat-font] .aui-root {
 		@apply hover:bg-white/[0.04] focus:bg-white/[0.06];
 	}
 
-	/* Switch — unsloth-green track when active, slider-gray thumb in
+	/* Switch — StudioTune accent track when active, slider-gray thumb in
 	   both states. Keeps the on-state recognizable as an "engaged"
 	   primary control while the moving thumb sits in the same neutral
 	   palette as the panel sliders, tying every control in the panel
@@ -2056,20 +2035,20 @@ html[data-chat-font] .aui-root {
 	}
 
 	/* The greeting is a heading: it follows the user's heading font and
-	   defaults to Hellix. Restored on the element because the base h1 rule
+	   defaults to Poppins. Restored on the element because the base h1 rule
 	   reads --font-heading with !important and .aui-thread-root resets
 	   that var to sans for chat prose. */
 	.unsloth-welcome-title {
 		--font-heading: var(
 			--custom-heading-font,
-			"Hellix",
-			"Space Grotesk Variable",
+			"Poppins",
+			"Poppins Variable",
 			var(--font-sans)
 		);
 		font-family: var(
 			--custom-heading-font,
-			"Hellix",
-			"Space Grotesk Variable",
+			"Poppins",
+			"Poppins Variable",
 			var(--font-sans)
 		);
 		font-weight: 500;
@@ -3305,4 +3284,94 @@ html[data-chat-font] .aui-root {
 .reload-snapshot-shell *::after {
 	animation: none !important;
 	transition: none !important;
+}
+
+
+/* StudioTune chrome remap.
+ * The Unsloth host still owns :root / .dark mechanics above. These later
+ * declarations retarget the painted surfaces, accent, and type so a reviewer
+ * sees StudioTune, not Unsloth green / Inter / warm-white. Token values are
+ * the locked Desktop --ai-* contract — do not invent new ones. */
+:root,
+:root.dark,
+.dark {
+	--background: #05060a;
+	--foreground: #f1f4fa;
+	--card: #0c1016;
+	--card-foreground: #f1f4fa;
+	--popover: #0c1016;
+	--popover-foreground: #f1f4fa;
+	--primary: #a9c7ff;
+	--primary-foreground: #04060a;
+	--secondary: #11151e;
+	--secondary-foreground: #f1f4fa;
+	--muted: #11151e;
+	--muted-foreground: #919aaa;
+	--accent: #11151e;
+	--accent-foreground: #f1f4fa;
+	--border: rgba(169, 199, 255, 0.12);
+	--input: rgba(169, 199, 255, 0.12);
+	--sidebar: #090c11;
+	--sidebar-foreground: #f1f4fa;
+	--sidebar-primary: #a9c7ff;
+	--sidebar-primary-foreground: #04060a;
+	--sidebar-accent: #11151e;
+	--sidebar-accent-foreground: #f1f4fa;
+	--sidebar-border: rgba(169, 199, 255, 0.12);
+	--nav-fg: #f1f4fa;
+	--nav-fg-muted: #919aaa;
+	--nav-surface-hover: #11151e;
+	--nav-icon-idle: #757a82;
+	--nav-beta-border: rgba(169, 199, 255, 0.22);
+	--panel-surface-fg-muted: #919aaa;
+	--chat-icon-fg: #919aaa;
+	--verified: #5be39b;
+	--control-accent: #a9c7ff;
+	--control-accent-foreground: #04060a;
+	--font-sans: "Poppins", "Poppins Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "Poppins", "Poppins Variable", var(--font-sans);
+	--font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+	--font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+}
+
+:root.light,
+.light {
+	--background: #f5f7fa;
+	--foreground: #17202c;
+	--card: #ffffff;
+	--card-foreground: #17202c;
+	--popover: #ffffff;
+	--popover-foreground: #17202c;
+	--primary: #315f99;
+	--primary-foreground: #ffffff;
+	--secondary: #e5ebf3;
+	--secondary-foreground: #17202c;
+	--muted: #eef2f7;
+	--muted-foreground: #526176;
+	--accent: #e5ebf3;
+	--accent-foreground: #17202c;
+	--border: rgba(43, 69, 104, 0.14);
+	--input: rgba(43, 69, 104, 0.14);
+	--sidebar: #eef2f7;
+	--sidebar-foreground: #17202c;
+	--sidebar-primary: #315f99;
+	--sidebar-primary-foreground: #ffffff;
+	--sidebar-accent: #e5ebf3;
+	--sidebar-accent-foreground: #17202c;
+	--sidebar-border: rgba(43, 69, 104, 0.14);
+	--nav-fg: #17202c;
+	--nav-fg-muted: #526176;
+	--nav-surface-hover: #e5ebf3;
+	--nav-icon-idle: #68758a;
+	--verified: #17633b;
+	--control-accent: #315f99;
+	--control-accent-foreground: #ffffff;
+}
+
+html,
+body,
+#root {
+	background: var(--ai-bg, #05060a);
+	color: var(--ai-text, #f1f4fa);
+	font-family: var(--studiotune-font-ui, var(--font-sans));
 }

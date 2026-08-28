@@ -1,0 +1,129 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright 2026-present Ainfera Inc. See /studio/LICENSE.AGPL-3.0. */
+
+/*
+ * StudioTune Desktop brand tokens + locked webfonts.
+ *
+ * Fonts are copied from the Desktop token source (desktop-app/public/fonts)
+ * and declared here so the host no longer paints Hellix / Inter / Space
+ * Grotesk as the product face. Token values stay locked by
+ * tests/studiotune-brand-tokens.test.ts.
+ */
+
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/poppins-400-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/poppins-500-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/poppins-600-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-500-latin.woff2") format("woff2");
+}
+
+:root {
+  /* StudioTune host surface (dark by contract). */
+  --ai-bg: #05060a;
+  --ai-panel: #090c11;
+  --ai-surface: #0c1016;
+  --ai-raised: #11151e;
+
+  /* StudioTune accent + text ramp. */
+  --ai-accent: #a9c7ff;
+  --ai-text: #f1f4fa;
+  --ai-muted: #919aaa;
+  --ai-faint: #757a82;
+  --ai-on-accent: #04060a;
+
+  /* Decision-status palette. Tune Agent uses these on the Ship / Hold /
+	 * Revise / Reject / Evidence chips so the meaning never drifts. */
+  --ship-fg: #5be39b;
+  --hold-fg: #ffc857;
+  --revise-fg: #ff9d66;
+  --reject-fg: #ff6b7a;
+  --evidence-fg: #5ed6d1;
+
+  /* StudioTune font stacks. Kept in tokens so Tune Agent chrome and the
+	 * wordmark can read them without picking a font family inline. */
+  --studiotune-font-ui: "Poppins", "Poppins Variable",
+    ui-sans-serif, system-ui, sans-serif;
+  --studiotune-font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace,
+    SFMono-Regular, Menlo, monospace;
+  --studiotune-font-display: "Iowan Old Style", "Palatino", "Palatino Linotype",
+    "Book Antiqua", Georgia, serif;
+}
+
+/* Namespaced class for StudioTune chrome (Tune Agent rail, wordmark, plan
+ * card, etc.). Applies the tokens without disturbing the Unsloth palette on
+ * the rest of the app. */
+.studiotune-brand {
+  background: var(--ai-bg);
+  color: var(--ai-text);
+  font-family: var(--studiotune-font-ui);
+}
+
+.studiotune-brand [data-studiotune-surface] {
+  background: var(--ai-surface);
+  color: var(--ai-text);
+}
+
+.studiotune-brand [data-studiotune-panel] {
+  background: var(--ai-panel);
+  color: var(--ai-text);
+}
+
+.studiotune-brand [data-studiotune-raised] {
+  background: var(--ai-raised);
+  color: var(--ai-text);
+}
+
+/* Wordmark uses the display serif; falls back to the existing heading font
+ * so a fresh install without the display font still reads. */
+.studiotune-wordmark {
+  font-family: var(--studiotune-font-display);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+/* Decision-status text helpers. Tests exercise these so a rebrand of the
+ * palette that quietly loses one of the five colors fails loudly. */
+.studiotune-fg-ship {
+  color: var(--ship-fg);
+}
+.studiotune-fg-hold {
+  color: var(--hold-fg);
+}
+.studiotune-fg-revise {
+  color: var(--revise-fg);
+}
+.studiotune-fg-reject {
+  color: var(--reject-fg);
+}
+.studiotune-fg-evidence {
+  color: var(--evidence-fg);
+}

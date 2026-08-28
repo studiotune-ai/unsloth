@@ -1,0 +1,179 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-008-REVERIFY-2026-08-29-WIB",
+  "ticket": "APP-008",
+  "linear": "AIN-939",
+  "issue": "APP-008",
+  "hop": "hold-to-beta-reverify-logs-only",
+  "generatedAtWib": "2026-08-29 00:39:23 WIB",
+  "timestamp_wib": "2026-08-29 00:39:23 WIB",
+  "when": "2026-08-29 00:39:23 WIB",
+  "status": "HOLD",
+  "repo": "studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "head": "c6b9185a615a7c9354a837e8bbe638ed4c0b1f59",
+  "head_short": "c6b9185a6",
+  "commit": "c6b9185a615a7c9354a837e8bbe638ed4c0b1f59",
+  "prior_receipts": [
+    "docs/receipts/APP-008-FREEZE-NOT-BETA-2026-08-28-2051-WIB.json",
+    "docs/receipts/APP-008-2026-08-28-3728d20544c5.json",
+    "docs/receipts/APP-010-FREEZE-2026-08-29-WIB.json",
+    "docs/receipts/APP-009-FREEZE-2026-08-28-WIB.json",
+    "docs/receipts/APP-007-FREEZE-IDENTITY-ONLY-2026-08-28-2238-WIB.json"
+  ],
+  "live": {
+    "host_pid": 55951,
+    "ppid": 55939,
+    "keepalive": "sleep 7200 (shell 55939)",
+    "path": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/unsloth-studio",
+    "sha256": "4ae23b512e5d55a8e5fe3189b300c92db7b0c1dd1a9456fbb4ee8310cee930f1",
+    "size_bytes": 61113632,
+    "codesign": "adhoc",
+    "signed": false,
+    "notarized": false,
+    "developer_id": false,
+    "team_identifier": "",
+    "direct_exec_proven": true,
+    "open_app": "Not re-tried. Prior hop: Code Signature Invalid after unsigned binary swap. Expected without Developer ID."
+  },
+  "sidecar": {
+    "path": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/tune-agent",
+    "sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+    "size_bytes": 7273104,
+    "codesign": "adhoc",
+    "unchanged": true,
+    "live_children_of_55951": "defunct (56025, 56026, 56133); no live tune-agent --stdio-json in this process",
+    "note": "Same sidecar digest as APP-008 freeze and APP-010 freeze. This hop did not rebuild sidecar and did not run scripts/build_sidecar.py --check."
+  },
+  "dist": "index-8D6pDg1G.js",
+  "mlx_runtime_admission": {
+    "status": "ADMITTED",
+    "python": "3.13.4",
+    "mlx_lm": "0.31.3",
+    "receipt_path": "/Users/hizrianraz/Library/Application Support/ai.studiotune.desktop/receipts/mlx_runtime_admission.json",
+    "runtimeAdmitted_derived": true,
+    "home_runtimeAdmitted": true
+  },
+  "app_009": {
+    "status": "FROZEN_TONIGHT",
+    "receipt": "docs/receipts/APP-009-FREEZE-2026-08-28-WIB.json",
+    "note": "APP-009 frozen tonight. Does not make APP-008 beta-ready."
+  },
+  "app_010": {
+    "status": "FROZEN_TONIGHT",
+    "receipt": "docs/receipts/APP-010-FREEZE-2026-08-29-WIB.json",
+    "persist": "localStorage studiotune.home.dataset-bind.v1",
+    "running_window_bind": "empty",
+    "note": "User never Accepted. No fake-write. APP-010 freeze does not make APP-008 beta-ready."
+  },
+  "blockers_APP_002_to_007": {
+    "APP-002": {
+      "linear": "AIN-934",
+      "title": "Git-HEAD reproducible sidecar",
+      "linear_status_observed": "Backlog",
+      "this_hop": "HOLD",
+      "user_gated": false,
+      "evidence": "Live bundled sidecar sha256 25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491 still present and unchanged. No git-HEAD CURRENT check this hop. Not a sidecar freeze."
+    },
+    "APP-003": {
+      "linear": "AIN-933",
+      "title": "Packaged unsigned journey stays green",
+      "linear_status_observed": "Backlog",
+      "this_hop": "HOLD",
+      "user_gated": false,
+      "evidence": "No packaged journey suite re-run this hop (cheap log/test only). Live unsigned StudioTune.app pid 55951 is not a 40-pass packaged journey receipt."
+    },
+    "APP-004": {
+      "linear": "AIN-935",
+      "title": "Signed StudioTune.app (founder unlock)",
+      "linear_status_observed": "Backlog",
+      "this_hop": "HOLD",
+      "user_gated": true,
+      "signed": false,
+      "codesign": "adhoc,linker-signed",
+      "evidence": "Host and sidecar remain adhoc. No Developer ID. No sign this hop."
+    },
+    "APP-005": {
+      "linear": "AIN-936",
+      "title": "Notarize and staple StudioTune.app (founder unlock)",
+      "linear_status_observed": "Backlog",
+      "this_hop": "HOLD",
+      "user_gated": true,
+      "notarized": false,
+      "evidence": "No notary, no staple, no spctl this hop."
+    },
+    "APP-006": {
+      "linear": "AIN-937",
+      "title": "Clean-machine or second-Mac packaged proof",
+      "linear_status_observed": "Backlog",
+      "this_hop": "HOLD",
+      "user_gated": true,
+      "evidence": "This hop is Mac Studio only. No second Mac. No clean-machine install."
+    },
+    "APP-007": {
+      "linear": "AIN-938",
+      "title": "Real MLX / retained-adapter path in Desktop",
+      "linear_status_observed": "In Progress",
+      "this_hop": "IDENTITY_ONLY_HOLD",
+      "user_gated": false,
+      "receipt": "docs/receipts/APP-007-FREEZE-IDENTITY-ONLY-2026-08-28-2238-WIB.json",
+      "compare_quality_claimed": false,
+      "evidence": "APP-007 remains identity-only HOLD. evaluateCompareQuality stays claimed=false. No live parent-vs-candidate quality compare. No train/serve path claimed."
+    }
+  },
+  "pixel": "UNPROVEN",
+  "pixel_proven": false,
+  "trained": false,
+  "train_this_hop": false,
+  "engine_called": false,
+  "grant_this_hop": false,
+  "hub_contacted": false,
+  "download_performed": false,
+  "network_used": false,
+  "signed": false,
+  "sign_this_hop": false,
+  "notarize": false,
+  "notarize_this_hop": false,
+  "publish_this_hop": false,
+  "merge_desktop_app_11": false,
+  "merged": false,
+  "authority": false,
+  "action_taken": false,
+  "beta_ready_claim": false,
+  "betaReadyClaim": false,
+  "claim_ceiling": "APP-008 HOLD re-verify only. Live unsigned pid/sha/sidecar/dist confirmed. APP-009 and APP-010 are frozen tonight and still do not make Desktop beta-ready. The six APP-002..007 blockers remain. Not a beta-ready claim. Not a signed or notarized ship. Not a merge.",
+  "verdict": "hold",
+  "next_safe_action": "HOLD",
+  "leftovers_not_user_gated": [
+    "APP-002 git-HEAD sidecar CURRENT check still undone (Backlog).",
+    "APP-003 packaged unsigned journey not re-run after tonight's unsigned persist rebuild.",
+    "APP-007 identity-only HOLD: quality compare and admitted real train/serve path still unproven."
+  ],
+  "user_gated_remains": [
+    "Developer ID sign (APP-004)",
+    "notarize + staple (APP-005)",
+    "second Mac / clean-machine (APP-006)",
+    "merge desktop-app #11",
+    "pixel proof of the running window",
+    "user Accept of a real local file in the running window",
+    "Grant / Engine train"
+  ],
+  "locks_honoured": [
+    "No train.",
+    "No Hub fetch.",
+    "No fake-write of dataset bind.",
+    "No pixels.",
+    "No sign / notarize.",
+    "No merge desktop-app #11.",
+    "Linear status unchanged.",
+    "beta_ready_claim left false."
+  ],
+  "notes": [
+    "Re-verified 2026-08-29 against current HEAD c6b9185a6 and live pid 55951.",
+    "Host sha256 4ae23b512e5d55a8e5fe3189b300c92db7b0c1dd1a9456fbb4ee8310cee930f1 matches APP-010 freeze.",
+    "Sidecar sha256 25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491 unchanged.",
+    "Dist index-8D6pDg1G.js. mlx_runtime_admission ADMITTED; Home runtimeAdmitted derived from receipt.",
+    "Live webview dataset bind empty. Pixel UNPROVEN. APP-008 still HOLD."
+  ]
+}

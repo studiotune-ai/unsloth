@@ -50,9 +50,9 @@ export const zhCN = {
     shutdown: "关闭服务",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "{name} 账号菜单",
     updateAvailable: "有可用更新",
     resize: {
@@ -71,6 +71,7 @@ export const zhCN = {
       runOptions: "训练选项",
     },
     navigation: {
+      home: "首页",
       newChat: "新聊天",
       returnToChat: "返回聊天",
       returnToChats: "返回 {count} 个聊天",

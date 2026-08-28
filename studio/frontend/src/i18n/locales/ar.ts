@@ -52,9 +52,9 @@ export const ar = {
     shutdown: "إيقاف التشغيل",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "قائمة حساب {name}",
     updateAvailable: "يتوفر تحديث",
     resize: {
@@ -73,6 +73,7 @@ export const ar = {
       runOptions: "خيارات التدريب",
     },
     navigation: {
+      home: "الرئيسية",
       newChat: "محادثة جديدة",
       returnToChat: "العودة إلى المحادثة",
       returnToChats: "العودة إلى المحادثات قيد التشغيل ({count})",

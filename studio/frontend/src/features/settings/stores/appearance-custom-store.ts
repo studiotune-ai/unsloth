@@ -86,18 +86,25 @@ export const SIDEBAR_MENU_DEFAULT_VISIBLE: Record<SidebarMenuItemId, boolean> =
     connections: false,
   };
 
-/** Sidebar NAVIGATION rows the user can pin and reorder, distinct from the profile-menu entries above. Array order is render order. Unpinned rows go to the "More" flyout, except a lone one, which is hidden. */
+/** Sidebar NAVIGATION rows the user can pin and reorder, distinct from the profile-menu entries above. Array order is render order. Unpinned rows go to the "More" flyout, except a lone one, which is hidden.
+ *
+ * StudioTune Desktop leads with the fine-tuning studio, not chat. Train,
+ * Recipes, Export and Compare are the primary rail; the chat-era destinations
+ * are demoted to "More" (code kept, hidden from default primary nav). Users
+ * can still pin them back through Settings → Appearance → Sidebar navigation.
+ */
 export const SIDEBAR_NAV_ITEM_IDS = [
-  // Model hub leads: picking a model comes before the work that uses one.
-  "hub",
-  "projects",
-  "images",
-  // Video and Audio sit directly under Images: the media tabs read as one group.
-  "video",
-  "audio",
   "train",
   "recipes",
   "export",
+  "compare",
+  // Demoted, but kept: chat / hub / images / video / audio / api and projects
+  // stay reachable through the More flyout so no work path is deleted.
+  "projects",
+  "hub",
+  "images",
+  "video",
+  "audio",
   "api",
 ] as const;
 
@@ -109,24 +116,27 @@ export type SidebarNavItemPref = {
   pinned: boolean;
 };
 
-// Matches the shipped layout, so an untouched install looks unchanged.
+// StudioTune Desktop default: the fine-tuning studio surfaces up top and
+// everything chat-era demotes to "More". Locked by tests in
+// tests/studiotune-nav-defaults.test.ts.
 export const SIDEBAR_NAV_DEFAULT_PINNED: Record<SidebarNavItemId, boolean> = {
-  hub: true,
-  projects: true,
-  images: true,
-  video: true,
-  // Under "More" until a user pins it.
-  audio: false,
   train: true,
-  recipes: false,
-  export: false,
+  recipes: true,
+  export: true,
+  compare: true,
+  projects: false,
+  hub: false,
+  images: false,
+  video: false,
+  audio: false,
   api: false,
 };
 
 /** Every previously shipped layout, so a migration can tell an untouched install from one the
  *  user arranged themselves. v3 pinned Video under Images; v4 moved Model hub above Projects;
  *  v5 put Video back under "More" and later added API before Audio shipped; v6 added Audio;
- *  v7 pins Video under Images again. */
+ *  v7 pins Video under Images again; v8 is the StudioTune rebrand (Train / Recipes / Export /
+ *  Compare on the primary rail; chat-era rows demote to More). */
 const SHIPPED_SIDEBAR_NAV_DEFAULTS: SidebarNavItemPref[][] = [
   [
     { id: "projects", pinned: true },
@@ -174,6 +184,20 @@ const SHIPPED_SIDEBAR_NAV_DEFAULTS: SidebarNavItemPref[][] = [
     { id: "train", pinned: true },
     { id: "recipes", pinned: false },
     { id: "export", pinned: false },
+    { id: "api", pinned: false },
+  ],
+  // v8: StudioTune rebrand default. Kept in this list so a future rearrange
+  // can still detect an untouched StudioTune install and migrate it forward.
+  [
+    { id: "train", pinned: true },
+    { id: "recipes", pinned: true },
+    { id: "export", pinned: true },
+    { id: "compare", pinned: true },
+    { id: "projects", pinned: false },
+    { id: "hub", pinned: false },
+    { id: "images", pinned: false },
+    { id: "video", pinned: false },
+    { id: "audio", pinned: false },
     { id: "api", pinned: false },
   ],
 ];
@@ -527,10 +551,10 @@ export const useAppearanceCustomStore = create<AppearanceCustomState>()(
 /* ------------------------------ DOM applier ------------------------------ */
 
 const DEFAULT_SANS_STACK =
-  '"Inter Variable", ui-sans-serif, sans-serif, system-ui';
+  '"Poppins", "Poppins Variable", ui-sans-serif, system-ui, sans-serif';
 const DEFAULT_HEADING_STACK =
-  '"Hellix", "Space Grotesk Variable", var(--font-sans)';
-const DEFAULT_MONO_STACK = "JetBrains Mono, monospace";
+  '"Poppins", "Poppins Variable", var(--font-sans)';
+const DEFAULT_MONO_STACK = '"IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace';
 
 /** WCAG-ish relative luminance from a #rrggbb hex. */
 function hexLuminance(hex: string): number {

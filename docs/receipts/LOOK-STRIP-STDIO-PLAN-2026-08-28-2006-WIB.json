@@ -1,0 +1,134 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "LOOK-STRIP-STDIO-PLAN-2026-08-28-2006-WIB",
+  "lock": "Hizrian + CoS 2026-08-28 19:47 WIB",
+  "generatedAtWib": "2026-08-28 20:06:48 WIB",
+  "host": "HizrianacStudio.localdomain",
+  "machineId": "747eebd2-6870-42a2-82f0-cef8be641489",
+  "repo": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "parentSha": "8437f3687aeec090b9142b1043f29683fc8c377e",
+  "productName": "StudioTune",
+  "identifier": "ai.studiotune.desktop",
+  "tokens": {
+    "--ai-bg": "#05060a",
+    "--ai-accent": "#a9c7ff",
+    "uiFont": "Poppins",
+    "monoFont": "IBM Plex Mono",
+    "displayFont": "Iowan Old Style",
+    "tokenSource": "desktop-app/src/style.css (READ ONLY)"
+  },
+  "thisHop": {
+    "lookStrip": [
+      "removed @fontsource-variable/inter and space-grotesk imports",
+      "removed Hellix @font-face as an active face",
+      "replaced :root / .dark --font-sans/--font-heading Inter/Hellix with Poppins",
+      "replaced live --primary / --sidebar-primary / --chart-1 #17b88b with #a9c7ff",
+      "startup/update wordmarks unsloth -> StudioTune in Poppins",
+      "visible empty-state/footer/splash copy: Closing/Starting/Installing/Stop/New version -> StudioTune",
+      "AGPL Unsloth AI Inc. headers kept"
+    ],
+    "stdioPlan": [
+      "sidecar --stdio-json method plan is consumed by tune_agent_request_plan",
+      "request line is id/method/session_id/outcome/provenance=live only",
+      "never sends train/admit/agent/engine/mode/parent_ref",
+      "validate requires method=plan, schema v1, authority=false, action_taken=false",
+      "diagnosis hold (ok=false) is still shown, not treated as transport failure",
+      "real_mac_sidecar_plan_is_show_only passed against the live sidecar"
+    ]
+  },
+  "tests": {
+    "studiotuneContracts": {
+      "tests": 100,
+      "pass": 100,
+      "fail": 0,
+      "verdict": "pass"
+    },
+    "rustTuneAgent": {
+      "command": "cargo test --offline --bin unsloth-studio tune_agent",
+      "tests": 39,
+      "pass": 39,
+      "fail": 0,
+      "includesLiveSidecarPlan": true,
+      "verdict": "pass"
+    },
+    "frontendFullSuite": {
+      "command": "node --experimental-strip-types --test tests/*.test.ts",
+      "tests": 5357,
+      "pass": 5355,
+      "fail": 2,
+      "failNotes": [
+        "desktop-closing-overlay overlay names the wait \u2014 expected Closing Unsloth; source+test now StudioTune; retest 11/11 pass",
+        "code-plugin-tokenization-work streaming fence shiki color mismatch \u2014 pre-existing, not this hop"
+      ],
+      "verdict": "honest_fail_counts"
+    }
+  },
+  "rebuild": {
+    "frontendViteBuild": true,
+    "frontendDist": {
+      "Hellix": 0,
+      "Inter Variable": 0,
+      "Space Grotesk": 0,
+      "#17b88b": 0,
+      "Poppins": 23,
+      "#a9c7ff": 13
+    },
+    "cargoRelease": "blocked_by_auto_review",
+    "tauriCliBundlesApp": "not_attempted_after_cargo_block",
+    "method": "Could not copy a new binary into StudioTune.app \u2014 cargo build --release was Auto-review blocked (executable content could not be bound), including the approval retry. Existing unsigned .app binary remains 2026-08-28 19:18 WIB rail-live hop.",
+    "signing": "adhoc,linker-signed (existing bundle, not re-signed)"
+  },
+  "window": {
+    "title": "StudioTune",
+    "owner": "StudioTune",
+    "pid": 63787,
+    "cg_window_id": 148509,
+    "bounds": {
+      "X": 320,
+      "Y": 142,
+      "Width": 1920,
+      "Height": 1187
+    },
+    "binaryMtimeWib": "2026-08-28 19:18 WIB",
+    "note": "Home is the front door in this running window (three-way adapt already landed). This hop's look-strip and tune_agent_request_plan are in source/dist/tests, not in the 19:18 binary."
+  },
+  "screenshot": {
+    "path": "docs/receipts/studiotune-look-strip-plan-2026-08-28.png",
+    "kind": "screencapture -x -o -l148509 (StudioTune.app window only)",
+    "capturedAtWib": "2026-08-28 20:06 WIB"
+  },
+  "stdioPlanLiveInWindow": false,
+  "stdioPlanLiveInSourceAndSidecar": true,
+  "stillLooksUnsloth": [
+    "running .app still embeds the 19:18 rail-live frontend (cargo release blocked)",
+    "Chat / Images / Video / Audio still exist under More",
+    "Hub route still present (demoted, unpinned)",
+    "HF dataset subset selectors remain in training",
+    "CLI copy still names unsloth start / unsloth studio update (honest host binary)",
+    "storage keys still unsloth_auth_*",
+    "deep-link still lists unsloth scheme alongside studiotune",
+    "AGPL copyright headers still say Unsloth AI Inc. team (kept on purpose)",
+    "example Hub repo still unsloth/Qwen3* model ids (train stack)",
+    "sloth mascot assets / some unsloth-* class names remain",
+    "Hellix font files may still sit under public/fonts but are not the live face"
+  ],
+  "untouchedByLock": [
+    "desktop-app (PR #11) \u2014 read-only tokens source",
+    "web repo",
+    "deck / seed-raise",
+    "desktop-app #11 not merged"
+  ],
+  "beta_ready_claim": false,
+  "authority": false,
+  "action_taken": false,
+  "signed": false,
+  "notarized": false,
+  "published": false,
+  "merged": false,
+  "hub_contacted": false,
+  "cloud_agent": false,
+  "verdict": "hold",
+  "hold_reason": "Look-strip and stdio plan are wired and tested. Unsigned rebuild of StudioTune.app was Auto-review blocked, so the running window still has the 19:18 binary. Home is the front door there. stdio plan is not live in that window. beta_ready_claim remains false. Not merging."
+}

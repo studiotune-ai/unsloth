@@ -1,0 +1,25 @@
+{
+  "schema": "studiotune.mlx-runtime-admission.v1",
+  "kind": "mlx_runtime_admission_receipt",
+  "authority": false,
+  "action_taken": false,
+  "status": "ADMITTED",
+  "executor_kind": "mlx_lora_adapter",
+  "runtime_admission_digest": "sha256:949dbbe5bdcd212dfc202ce2eca69f9419f3bf862091bf4e7dc3e6cd5d501cc9",
+  "python_executable_digest": "sha256:f70035d9225815eca6c71970987963d36423039b2235e6305aa89b516d51ef9b",
+  "python_implementation": "cpython",
+  "python_version": "3.13.4",
+  "mlx_lm_distribution": "mlx-lm",
+  "mlx_lm_version": "0.31.3",
+  "mlx_lm_package_digest": "sha256:03df4ccb2dac9fe44c128821bf9e76a1022442fbeb834d8ff3903ec0c147d341",
+  "mlx_lm_package_file_count": 167,
+  "claim_ceiling": "Exact startup runtime identity admitted; model loading, training, inference, quality, and release remain unverified.",
+  "execution_profile": "beta",
+  "retained_adapter": {
+    "path": "/tmp/studiotune-cli-007/adapter",
+    "adapters_sha256": "4842bc09742a8bc72db1388d375fe025179697ded5deba8ddaccfc5a5b9ea8b3",
+    "adapter_config_sha256": "15fe42f29a937c35084632b1e1c46790162065a53753a542f417cb94afcddfc1",
+    "from_run": false,
+    "note": "Retained CLI-007 mlx-lm LoRA already on disk; this receipt does not train."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-007-COMPARE-IDENTITY-WIRE-2026-08-28-2238-WIB",
+  "issue": "APP-007",
+  "linear": "AIN-938",
+  "ain952_leftover": "Desktop admitted real train/serve path and quality compare stay HOLD",
+  "hop": "compare-identity-wire",
+  "when": "2026-08-28 22:38 WIB",
+  "repo": "studiotune-ai/unsloth",
+  "pr": 1,
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "base_head": "d34f83c3d89f67cb8c6ff3800824ff0cbded2e9a",
+  "kind": "identity",
+  "surface": "studio/frontend/src/features/compare/compare-page.tsx",
+  "module": "studio/frontend/src/features/compare/identity-log.ts",
+  "route": "/compare",
+  "second_route": false,
+  "copied_from": "docs/receipts/APP-007-IDENTITY-INFERENCE-2026-08-28-2230-WIB.json",
+  "runtime_import_from_docs": false,
+  "identity": {
+    "prompt": "Reply with the single word ping.",
+    "parent_text": "\n\nI have a long story to tell you about my life.\n\nI have a",
+    "candidate_text": "\n\nI have a long story to tell you about my life.\n\nI have a",
+    "identical": true,
+    "adapter_sha": "4842bc09742a8bc72db1388d375fe025179697ded5deba8ddaccfc5a5b9ea8b3",
+    "parent_snapshot": "a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3"
+  },
+  "evaluateCompareQuality": {
+    "claimed": false,
+    "status": "HOLD",
+    "reason": "identity inference is not quality",
+    "authority": false
+  },
+  "tests": {
+    "command": "cd studio/frontend && node --experimental-strip-types --test tests/compare-quality.test.ts tests/compare-identity-log.test.ts tests/retained-adapter-bind.test.ts",
+    "passed": 17,
+    "failed": 0,
+    "compare_quality": { "passed": 7, "failed": 0 },
+    "compare_identity_log": { "passed": 4, "failed": 0 },
+    "retained_adapter_bind": { "passed": 6, "failed": 0 }
+  },
+  "empty_copy_removed": "No candidate to compare yet",
+  "page_hold": true,
+  "quality_scores_added": false,
+  "fixtures_as_quality": false,
+  "compare_quality_claimed": false,
+  "trained": false,
+  "hub_fetch": false,
+  "signed": false,
+  "merged": false,
+  "beta_ready_claim": false,
+  "authority": false,
+  "notes": [
+    "IDENTITY_LOG is a frozen in-module copy of the 2230-WIB identity receipt. No fetch, no docs/ import at runtime.",
+    "/compare now calls evaluateCompareQuality with the real local parent+candidate paths plus the identity log. Reason is identity inference is not quality.",
+    "Empty 'No candidate to compare yet' heading is gone. HOLD badge and quality_claimed=false stay. No scores, win_rate, bleu, or improved.",
+    "Unsigned running .app is not rebuilt on this hop. Source + tests + receipts only. Not a merge of #1 or desktop-app #11."
+  ]
+}

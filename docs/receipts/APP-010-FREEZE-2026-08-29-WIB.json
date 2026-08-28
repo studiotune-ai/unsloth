@@ -1,0 +1,126 @@
+{
+  "id": "APP-010-FREEZE-2026-08-29-WIB",
+  "issue": "APP-010",
+  "linear": "AIN-952",
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "hop": "app-010-freeze-persist-survives-relaunch",
+  "when": "2026-08-29 00:31 WIB",
+  "timestamp_wib": "2026-08-29 00:31 WIB",
+  "status": "HOLD",
+  "repo": "studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": 1,
+  "head_at_proof": "57e5bbd12839ae52233a4df094a1d459114cfcda",
+  "head_short": "57e5bbd12",
+  "source_commits": [
+    "0b59c382f7c1397f2c1fa764b21343b3fd007a28",
+    "0db24385802d3156a8611197a71c48d0f766885d",
+    "57e5bbd12839ae52233a4df094a1d459114cfcda"
+  ],
+  "persist_surface": "localStorage",
+  "persist_key": "studiotune.home.dataset-bind.v1",
+  "persist_module": "studio/frontend/src/features/data-recipes/data/local-files-home-bind.ts",
+  "dexie_recipes_untouched": true,
+  "host": {
+    "pid": 55951,
+    "ppid": 55939,
+    "keepalive": "sleep 7200 (shell 55939)",
+    "path": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/unsloth-studio",
+    "sha256": "4ae23b512e5d55a8e5fe3189b300c92db7b0c1dd1a9456fbb4ee8310cee930f1",
+    "codesign": "adhoc",
+    "signed": false
+  },
+  "sidecar": {
+    "bundled_sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+    "unchanged": true
+  },
+  "dist": "index-8D6pDg1G.js",
+  "dist_embeds_persist_key": true,
+  "running_window_bind": "empty",
+  "running_window_bind_detail": "Live WebKit ItemTable has no studiotune.home.dataset-bind.v1. User never Accepted. Source hydrate proof still counts. No fake bind written into the live store.",
+  "live_webview_store": "/Users/hizrianraz/Library/WebKit/ai.studiotune.desktop/WebsiteData/Default/Bxs52IhCkUHAd0ccfvuK4v50wfJ8y8j4ITBNHwy1v6w/Bxs52IhCkUHAd0ccfvuK4v50wfJ8y8j4ITBNHwy1v6w/LocalStorage/localstorage.sqlite3",
+  "proof_receipt": "docs/receipts/APP-010-PERSIST-RELAUNCH-LOG-PROOF-2026-08-29-WIB.json",
+  "log_proof": {
+    "via": "hydrateAcceptedLocalDatasetBind + buildOutcomePlan",
+    "hydrated_dataset_plus_admitted_receipt": {
+      "missing-dataset": false,
+      "missing-admit": false,
+      "clarifications": [],
+      "admit_step": "ready",
+      "train_step": "ready"
+    },
+    "cleared_bind": {
+      "missing-dataset": true,
+      "missing-admit": false,
+      "clarifications": [
+        "missing-dataset"
+      ],
+      "admit_step": "ready"
+    },
+    "discriminating_negative": {
+      "runtimeAdmitted": false,
+      "missing-dataset": false,
+      "missing-admit": true,
+      "clarifications": [
+        "missing-admit"
+      ],
+      "admit_step": "clarification",
+      "train_step": "clarification"
+    }
+  },
+  "tests": {
+    "path": "studio/frontend/tests/local-files-home-bind.test.ts",
+    "count": 11,
+    "pass": 11,
+    "fail": 0
+  },
+  "runtimeAdmitted": true,
+  "runtimeAdmitted_derived": true,
+  "runtimeAdmitted_source": "isRuntimeAdmitted(receipt)",
+  "receipt_status": "ADMITTED",
+  "receipt_path": "/Users/hizrianraz/Library/Application Support/ai.studiotune.desktop/receipts/mlx_runtime_admission.json",
+  "trained": false,
+  "train_this_hop": false,
+  "engine_called": false,
+  "grant_this_hop": false,
+  "hub_contacted": false,
+  "pixel": "UNPROVEN",
+  "pixel_proven": false,
+  "beta_ready_claim": false,
+  "signed": false,
+  "sign_this_hop": false,
+  "notarize": false,
+  "notarize_this_hop": false,
+  "publish_this_hop": false,
+  "merge_desktop_app_11": false,
+  "authority": false,
+  "action_taken": false,
+  "verdict": "hold",
+  "leftovers_checked": {
+    "running_window_bind": "empty \u2014 user never Accepted a local-files proposal in pid 55951. Honest. No fake persist.",
+    "pixel_running_window": "UNPROVEN. HOLD. Not this hop.",
+    "compare_identity_only": "HOLD. evaluateCompareQuality stays claimed=false.",
+    "CLI-008_show": "IMPLEMENTED_NOT_SHIPPED / next_safe_action HOLD.",
+    "TUN-007": "IMPLEMENTED_NOT_SHIPPED / next_safe_action HOLD.",
+    "dexie_unsloth_data_recipes": "untouched by Accept / hydrate / clear."
+  },
+  "next_unblocked_hop": "user-accept-local-files-in-running-window",
+  "next_unblocked_hop_detail": "User Accepts a real local file on /data-recipes so the live webview writes studiotune.home.dataset-bind.v1. Then a relaunch can log-prove the live store hydrates. Do not fake-write the live store. Do not pixel. Do not sign, notarize, merge #11, or train.",
+  "user_gated_remains": [
+    "Developer ID sign",
+    "notarize",
+    "second Mac",
+    "merge desktop-app #11",
+    "pixel proof of the running window",
+    "Grant / Engine train",
+    "user Accept of a real local file in the running window"
+  ],
+  "notes": [
+    "APP-010 persist is frozen on source hydrate + buildOutcomePlan logs. Dist index-8D6pDg1G.js embeds the key. Host pid 55951 sha256 4ae23b51 is the unsigned persist rebuild.",
+    "Hydrated valid bind + ADMITTED receipt: clarifications empty (no missing-dataset, no missing-admit).",
+    "Clear: missing-dataset returns; missing-admit stays absent.",
+    "Discriminating negative: runtimeAdmitted=false still fires missing-admit.",
+    "Live window store is empty. That is running_window_bind=empty, not a fake persist.",
+    "Pixel UNPROVEN. HOLD. beta_ready_claim false. No merge #11. No train."
+  ]
+}

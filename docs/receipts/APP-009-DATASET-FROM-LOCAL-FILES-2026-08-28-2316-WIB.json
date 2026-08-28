@@ -1,0 +1,22 @@
+{
+  "issue": "APP-009",
+  "linear": "AIN-951",
+  "hop": "dataset-from-app010-local-files-accept",
+  "when": "2026-08-28 23:16 WIB",
+  "head_base": "5807ab0df",
+  "dataset_seeded_from": "accepted APP-010 local-files proposal (in-memory)",
+  "dataset_default_without_accept": null,
+  "runtimeAdmitted": false,
+  "admit_receipt_read": false,
+  "authority": false,
+  "dexie_write": false,
+  "trains_on_accept": false,
+  "beta_ready_claim": false,
+  "merged": false,
+  "signed": false,
+  "notes": [
+    "Accept on /data-recipes binds the first local file path into Home facts.dataset.",
+    "Reject clears it. No Dexie. No Engine.",
+    "No live mlx_runtime_admission receipt found on Unsloth host, so runtimeAdmitted stays false."
+  ]
+}

@@ -8,10 +8,10 @@
 try {
   // Storage reads get their own guards so a blocked localStorage (private
   // browsing) still resolves a mode from the OS preference.
-  var theme = "system";
+  var theme = "dark";
   var palette = null;
   try {
-    theme = localStorage.getItem("theme") || "system";
+    theme = localStorage.getItem("theme") || "dark";
     palette = localStorage.getItem("palette");
   } catch (e) {}
   var dark =

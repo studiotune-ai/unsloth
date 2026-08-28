@@ -1,0 +1,29 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "BUNDLED-SIDECAR-NO-PATH-2026-08-28-2025-WIB",
+  "generatedAtWib": "2026-08-28 20:25:16 WIB",
+  "host": "HizrianacStudio.localdomain",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "lock": "CoS: banner proof blocked; next hop unsigned sidecar so shipping app does not rely on PATH.",
+  "banner_proof": {
+    "pid": 14179,
+    "result": "blocked",
+    "reason": "desktop-login 401; Home composer never mounted; no tune-agent child; no plan/diagnosis in tauri.log"
+  },
+  "bundled_sidecar": {
+    "path": "StudioTune.app/Contents/MacOS/tune-agent",
+    "sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+    "live_plan": {
+      "ok": false,
+      "code": "OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS",
+      "disposition": "REVISE",
+      "authority": false,
+      "action_taken": false
+    },
+    "live_train": "STDIO_METHOD_UNKNOWN"
+  },
+  "resolver": "bundled exe_dir/tune-agent before ~/.studiotune and PATH",
+  "tests": "resolve_sidecar_launch 9/9 including prefers_bundled_sidecar_over_home_and_path",
+  "beta_ready_claim": false,
+  "next_safe_action": "HOLD"
+}

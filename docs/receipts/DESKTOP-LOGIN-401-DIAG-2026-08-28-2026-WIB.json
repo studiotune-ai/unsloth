@@ -1,0 +1,11 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "DESKTOP-LOGIN-401-DIAG-2026-08-28-2026-WIB",
+  "generatedAtWib": "2026-08-28 20:28:08 WIB",
+  "pid": 14179,
+  "verdict": "not_user_login",
+  "detail": "POST /api/auth/desktop-login 401 is validate_desktop_secret_with_credential miss. Desktop auth is passwordless host-secret exchange. 401 is Ok(None), then rust retries provision. Not a human password form. Do not mint or copy a session. Home can still mount (20:11 OCR). personalization 422 is a separate settings payload fail.",
+  "user_gated": false,
+  "session_faked": false,
+  "beta_ready_claim": false
+}

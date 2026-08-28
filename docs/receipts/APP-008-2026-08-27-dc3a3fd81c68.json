@@ -1,0 +1,214 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-008",
+  "goal": "StudioTune Desktop can be called beta-mechanics-ready (not marketing beta). HOLD until every unproven Mac-only step lands.",
+  "generatedAt": "2026-08-27T06:28:36.793Z",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "commit": "dc3a3fd81c6894f30bb78303fd61eecfc2f91228",
+  "host": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v22.14.0"
+  },
+  "summary": {
+    "total": 15,
+    "pass": 8,
+    "fail": 0,
+    "unproven": 7,
+    "verdict": "hold"
+  },
+  "checks": [
+    {
+      "id": "brand-tokens",
+      "name": "StudioTune brand tokens are locked (CSS + HTML + i18n + tauri.conf.json)",
+      "verdict": "pass",
+      "detail": "brand tokens: 27/27 pass, 0 fail",
+      "evidence": {
+        "totalN": 27,
+        "passN": 27,
+        "failN": 0
+      }
+    },
+    {
+      "id": "nav-defaults",
+      "name": "Train / Recipes / Export / Compare are the pinned primary rail",
+      "verdict": "pass",
+      "detail": "nav defaults: 4/4 pass, 0 fail",
+      "evidence": {
+        "totalN": 4,
+        "passN": 4,
+        "failN": 0
+      }
+    },
+    {
+      "id": "guards-and-bridge",
+      "name": "Accept ≠ Engine, Plan ≠ Train, Agent refuses without admit, live bridge fail-closes",
+      "verdict": "pass",
+      "detail": "tune-agent guards + bridge + admit parity: 26/26 pass, 0 fail",
+      "evidence": {
+        "totalN": 26,
+        "passN": 26,
+        "failN": 0
+      }
+    },
+    {
+      "id": "full-frontend-suite",
+      "name": "Full StudioTune Desktop frontend test suite is green",
+      "verdict": "pass",
+      "detail": "full suite: 5313/5313 pass, 0 fail",
+      "evidence": {
+        "totalN": 5313,
+        "passN": 5313,
+        "failN": 0
+      }
+    },
+    {
+      "id": "rust-admit",
+      "name": "Rust tune_agent admit policy tests are green (regular-file python, allow-list snapshot, no Hub id)",
+      "verdict": "pass",
+      "detail": "rust admit: 10 passed, 0 failed",
+      "evidence": {
+        "passN": 10,
+        "failN": 0
+      }
+    },
+    {
+      "id": "updater-disabled",
+      "name": "Auto-updater fails closed; no Unsloth GitHub release endpoint remains",
+      "verdict": "pass",
+      "detail": "updater short-circuits; endpoints do not touch unslothai/unsloth.",
+      "evidence": {
+        "endpoints": [
+          "https://studiotune.ai/desktop/updates/latest.json"
+        ],
+        "disabledFlag": true
+      }
+    },
+    {
+      "id": "agpl-notices",
+      "name": "AGPL-3.0 upstream notices retained (COPYING, studio/LICENSE.AGPL-3.0, attribution overlay)",
+      "verdict": "pass",
+      "detail": "COPYING, studio/LICENSE.AGPL-3.0, and attribution/STUDIOTUNE.md all present."
+    },
+    {
+      "id": "frontend-dist",
+      "name": "Frontend dist tree exists and has a stable sha256",
+      "verdict": "pass",
+      "detail": "705 files, sha256=785b1daa653a…",
+      "evidence": {
+        "present": true,
+        "digest": "785b1daa653a238f900737d796d63407284ea3631bf74975ad54a207efd7ef0d",
+        "fileCount": 705
+      }
+    },
+    {
+      "id": "unsigned-app-build",
+      "name": "Unsigned StudioTune.app bundle built via `npm run tauri build -- --bundles app`",
+      "verdict": "unproven",
+      "detail": "Build must run on a macOS host. This receipt was generated on a Linux VM.",
+      "evidence": {
+        "host": {
+          "platform": "linux",
+          "arch": "x64",
+          "node": "v22.14.0"
+        }
+      }
+    },
+    {
+      "id": "cold-start",
+      "name": "Unsigned StudioTune.app cold-starts to the sidebar in < 8s and does not crash",
+      "verdict": "unproven",
+      "detail": "Journey step requires launching the .app on the target Mac.",
+      "evidence": {
+        "host": {
+          "platform": "linux",
+          "arch": "x64",
+          "node": "v22.14.0"
+        }
+      }
+    },
+    {
+      "id": "rail-visible",
+      "name": "Tune Agent rail is visible in the shell after cold start",
+      "verdict": "unproven",
+      "detail": "DOM check requires the running .app; the WebView is macOS-only in this build.",
+      "evidence": {
+        "host": {
+          "platform": "linux",
+          "arch": "x64",
+          "node": "v22.14.0"
+        }
+      }
+    },
+    {
+      "id": "sidecar-handshake",
+      "name": "Tune Agent sidecar handshake succeeds or the rail shows honest HOLD",
+      "verdict": "unproven",
+      "detail": "Handshake requires the tune-agent binary present on the target Mac. This branch's IPC fails closed if it is missing.",
+      "evidence": {
+        "host": {
+          "platform": "linux",
+          "arch": "x64",
+          "node": "v22.14.0"
+        }
+      }
+    },
+    {
+      "id": "admit-succeeds",
+      "name": "Admit runtime with the framework python3.13 + Qwen2.5-0.5B-4bit snapshot returns admitted=true, HF_HUB_OFFLINE=1",
+      "verdict": "unproven",
+      "detail": "Admit reads /Library/Frameworks/... and ~/.cache/huggingface/...; both are macOS paths.",
+      "evidence": {
+        "host": {
+          "platform": "linux",
+          "arch": "x64",
+          "node": "v22.14.0"
+        }
+      }
+    },
+    {
+      "id": "admit-refuses-symlink",
+      "name": "Admit refuses /usr/bin/python3 (symlink) with the documented reason",
+      "verdict": "unproven",
+      "detail": "Requires the actual macOS filesystem so symlink_metadata distinguishes symlink from regular file.",
+      "evidence": {
+        "host": {
+          "platform": "linux",
+          "arch": "x64",
+          "node": "v22.14.0"
+        }
+      }
+    },
+    {
+      "id": "guards-in-app",
+      "name": "Rail guards fire in the running .app: Accept never touches Engine, Plan cannot Train, Agent refuses without admit",
+      "verdict": "unproven",
+      "detail": "In-app check requires the running .app. Unit tests already cover the same guards headlessly (see guards-and-bridge).",
+      "evidence": {
+        "host": {
+          "platform": "linux",
+          "arch": "x64",
+          "node": "v22.14.0"
+        }
+      }
+    }
+  ],
+  "unprovenBlocksSignedBeta": [
+    "Second Mac cold-start on a machine without any dev tooling (this receipt only speaks to the dev host).",
+    "Developer ID application signing + Apple notarization + stapled ticket.",
+    "Live Compare quality run (parent vs candidate) against real fixtures — the Compare page is still an honest HOLD placeholder.",
+    "Tune Agent process shipped alongside the .app: the sidecar binary must be present at ~/.studiotune/tune-agent (or a configured path) before the live bridge can connect."
+  ],
+  "hardLocksHonored": {
+    "noSignNotarizePublish": true,
+    "noHubFetch": true,
+    "noHubIdToMlxLm": true,
+    "updaterDisabled": true,
+    "plainPythonSymlinkRefused": true,
+    "hfHubOffline": "1",
+    "agplNoticesRetained": true,
+    "apacheCoreUntouched": true,
+    "trainFirstNavRetained": true,
+    "brandTokensRetained": true
+  }
+}

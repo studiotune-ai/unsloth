@@ -1,0 +1,13 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "EMPTY-START-BINARY-FREEZE-2026-08-28-2051-WIB",
+  "generatedAtWib": "2026-08-28 20:53:00 WIB",
+  "contract": "DEFAULT_TUNE_AGENT_BINARY_PATH is the empty string. That is the freeze, not a missing path. Rust resolve_sidecar_launch then prefers <exe_dir>/tune-agent (StudioTune.app/Contents/MacOS/tune-agent) over $HOME/.studiotune/tune-agent and $PATH.",
+  "proven_child_argv": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/tune-agent --stdio-json",
+  "host_pid": 30694,
+  "sidecar_sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+  "fix_this_hop": false,
+  "train_this_hop": false,
+  "beta_ready_claim": false,
+  "next_safe_action": "HOLD"
+}

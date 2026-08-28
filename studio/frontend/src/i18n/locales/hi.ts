@@ -55,9 +55,9 @@ export const hi = {
     shutdown: "शटडाउन",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "{name} का खाता मेनू",
     updateAvailable: "अपडेट उपलब्ध है",
     resize: {
@@ -76,6 +76,7 @@ export const hi = {
       runOptions: "रन विकल्प",
     },
     navigation: {
+      home: "होम",
       newChat: "नई चैट",
       returnToChat: "चैट पर लौटें",
       returnToChats: "{count} चैट पर लौटें",

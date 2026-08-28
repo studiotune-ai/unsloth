@@ -54,9 +54,9 @@ export const ja = {
     shutdown: "シャットダウン",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "{name} のアカウントメニュー",
     updateAvailable: "アップデートが利用可能です",
     resize: {
@@ -75,6 +75,7 @@ export const ja = {
       runOptions: "実行オプション",
     },
     navigation: {
+      home: "ホーム",
       newChat: "新規チャット",
       returnToChat: "チャットに戻る",
       returnToChats: "{count} 件のチャットに戻る",

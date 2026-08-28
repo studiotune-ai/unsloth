@@ -1,0 +1,78 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-010-2026-08-28",
+  "ticket": "APP-010",
+  "linear": "AIN-952",
+  "generatedAtWib": "2026-08-28 21:41:00 WIB",
+  "lock": "AIN-952: extend the existing Unsloth host /data-recipes surface. Do not invent a second recipe UI. Do not pull remote datasets. Do not treat fixture compare as quality.",
+  "host_unsloth": {
+    "route": "/data-recipes",
+    "kind": "Unsloth Dexie recipe studio (unsloth-data-recipes)",
+    "second_recipe_ui_invented": false,
+    "second_recipes_route_added": false,
+    "learning_recipes_kept": true,
+    "compare_route": "/compare",
+    "compare_quality_claimed": false
+  },
+  "landed": {
+    "module": "studio/frontend/src/features/data-recipes/data/local-files-proposal.ts",
+    "barrel_reexport": "studio/frontend/src/features/data-recipes/index.ts",
+    "tests": {
+      "path": "studio/frontend/tests/data-recipes-local-files-proposal.test.ts",
+      "count": 9,
+      "invariants": [
+        "propose: local files become a hashed dataset proposal (order-independent, canonical)",
+        "propose: refuses Hub / remote / bare-scheme paths outright and never resolves them",
+        "propose: refuses empty file sets and duplicate paths before hashing",
+        "propose: hash is content-sensitive on path, bytes, and sha256",
+        "accept: updates only the proposal — no train / run / export / Dexie / engine / hub / fetch",
+        "reject: clears proposal to null without touching persisted state and does not mutate the input",
+        "authority=false on every returned proposal, at every status, after accept",
+        "propose surface stays on the /data-recipes route (no second recipe UI, no new route)",
+        "hash is stable across permutations and canonicalizes the file list"
+      ]
+    },
+    "plan_card_reject_label": {
+      "file": "studio/frontend/src/features/home/plan-card.tsx",
+      "handler": "onReject(step)",
+      "test_id": "home-plan-step-${step.id}-reject",
+      "opt_in": true,
+      "hint": "Reject this step's proposal. Nothing persists, nothing trains.",
+      "tests": {
+        "path": "studio/frontend/tests/studiotune-plan-card-reject.test.ts",
+        "count": 2
+      }
+    },
+    "frontend_suite": {
+      "pass": 5372,
+      "fail": 0,
+      "baseline_before": 5361,
+      "added": 11
+    },
+    "typecheck": "clean (tsc -b + tsc -p tsconfig.test.json)"
+  },
+  "done_when_status": {
+    "hashed_local_files_proposal": "PROVEN by tests on the live Unsloth host module (studio/frontend/src/features/data-recipes/data/local-files-proposal.ts)",
+    "refuses_hub_and_remote": "PROVEN — https://huggingface.co, hf://, huggingface://, hub://, s3://, gs://, ftp://, data:, http(s):// all rejected",
+    "accept_is_not_approve_run_train_export": "PROVEN — module has no dexie / engine / hub / fetch / XHR imports; recipes-db is not touched",
+    "reject_clears_without_persisted_side_effects": "PROVEN — reject returns null, input untouched",
+    "authority_false": "PROVEN — invariant asserted on proposed and accepted states",
+    "plan_card_reject_label_present": "SHIPPED — opt-in step-level Reject wired to handlers.onReject (Discard on the revision bar unchanged)",
+    "parent_vs_candidate_compare_quality": "HOLD — /compare route exists; quality unproven, no fixture-as-quality claim"
+  },
+  "still_unproven": [
+    "End-to-end wiring from a local-file picker on /data-recipes into proposeLocalFiles (data-layer contract landed; UI wiring is a follow-up hop)",
+    "Parent vs candidate compare quality (route exists, quality claim remains HOLD)",
+    "High-stakes approve / run / export / delete stays deferred"
+  ],
+  "hub_contacted": false,
+  "train_this_hop": false,
+  "sign_this_hop": false,
+  "notarize_this_hop": false,
+  "publish_this_hop": false,
+  "spend_this_hop": false,
+  "second_recipe_ui_invented": false,
+  "desktop_app_repo_touched": false,
+  "beta_ready_claim": false,
+  "next_safe_action": "HOLD"
+}

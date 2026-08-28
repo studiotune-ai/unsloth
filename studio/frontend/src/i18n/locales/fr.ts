@@ -55,9 +55,9 @@ export const fr = {
     shutdown: "Arrêter",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "Menu du compte de {name}",
     updateAvailable: "Mise à jour disponible",
     resize: {
@@ -76,6 +76,7 @@ export const fr = {
       runOptions: "Options d'exécution",
     },
     navigation: {
+      home: "Accueil",
       newChat: "Nouvelle discussion",
       returnToChat: "Retour à la discussion",
       returnToChats: "Retour à {count} discussions",

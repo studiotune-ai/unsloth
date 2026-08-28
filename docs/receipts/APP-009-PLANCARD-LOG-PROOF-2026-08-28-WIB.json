@@ -1,0 +1,262 @@
+{
+  "id": "APP-009-PLANCARD-LOG-PROOF-2026-08-28-WIB",
+  "issue": "APP-009",
+  "linear": "AIN-951",
+  "when": "2026-08-28 23:51 WIB",
+  "kind": "log_only_plancard_proof",
+  "pixel": "UNPROVEN",
+  "trained": false,
+  "authority": false,
+  "action_taken": false,
+  "engine_called": false,
+  "home_builder": {
+    "kind": "app009_home_plancard_log_proof",
+    "when_wib": "2026-08-28",
+    "prompt": "Fine-tune a local LoRA on a local dataset",
+    "receipt_status": "ADMITTED",
+    "receipt_schema": "studiotune.mlx-runtime-admission.v1",
+    "receipt_executor_kind": "mlx_lora_adapter",
+    "derived_runtimeAdmitted": true,
+    "runtimeAdmitted_source": "isRuntimeAdmitted(receipt)",
+    "dataset_in_memory": null,
+    "admitted_facts": {
+      "parent": "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+      "dataset": null,
+      "runtimeAdmitted": true
+    },
+    "admitted_card": {
+      "method": "LoRA",
+      "runtime": "mlx",
+      "parent": "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+      "dataset": "UNKNOWN",
+      "cost": "local-only",
+      "summary": "LoRA on this machine (dataset pending clarification).",
+      "clarifications": [
+        "missing-dataset"
+      ],
+      "steps": [
+        {
+          "id": "inspect-parent",
+          "status": "ready",
+          "clarification": null
+        },
+        {
+          "id": "inspect-dataset",
+          "status": "clarification",
+          "clarification": "missing-dataset"
+        },
+        {
+          "id": "recipe",
+          "status": "ready",
+          "clarification": null
+        },
+        {
+          "id": "admit",
+          "status": "ready",
+          "clarification": null
+        },
+        {
+          "id": "train",
+          "status": "ready",
+          "clarification": null
+        },
+        {
+          "id": "compare",
+          "status": "optional",
+          "clarification": null
+        },
+        {
+          "id": "export",
+          "status": "optional",
+          "clarification": null
+        }
+      ],
+      "recipe": {
+        "prompt": "Fine-tune a local LoRA on a local dataset",
+        "ready_step_ids": [
+          "inspect-parent",
+          "recipe",
+          "admit",
+          "train"
+        ]
+      },
+      "authority": false,
+      "action_taken": false,
+      "missing_admit_fired": false,
+      "missing_dataset_fired": true
+    },
+    "false_facts": {
+      "parent": "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+      "dataset": null,
+      "runtimeAdmitted": false
+    },
+    "false_card": {
+      "method": "LoRA",
+      "runtime": "mlx",
+      "parent": "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+      "dataset": "UNKNOWN",
+      "cost": "local-only",
+      "summary": "LoRA on this machine (dataset pending clarification).",
+      "clarifications": [
+        "missing-dataset",
+        "missing-admit"
+      ],
+      "steps": [
+        {
+          "id": "inspect-parent",
+          "status": "ready",
+          "clarification": null
+        },
+        {
+          "id": "inspect-dataset",
+          "status": "clarification",
+          "clarification": "missing-dataset"
+        },
+        {
+          "id": "recipe",
+          "status": "ready",
+          "clarification": null
+        },
+        {
+          "id": "admit",
+          "status": "clarification",
+          "clarification": "missing-admit"
+        },
+        {
+          "id": "train",
+          "status": "clarification",
+          "clarification": "missing-admit"
+        },
+        {
+          "id": "compare",
+          "status": "optional",
+          "clarification": null
+        },
+        {
+          "id": "export",
+          "status": "optional",
+          "clarification": null
+        }
+      ],
+      "recipe": {
+        "prompt": "Fine-tune a local LoRA on a local dataset",
+        "ready_step_ids": [
+          "inspect-parent",
+          "recipe"
+        ]
+      },
+      "authority": false,
+      "action_taken": false,
+      "missing_admit_fired": true,
+      "missing_dataset_fired": true
+    }
+  },
+  "sidecar_stdio_plan": {
+    "action_taken": false,
+    "authority": false,
+    "code": "OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS",
+    "id": "plan-1",
+    "method": "plan",
+    "ok": false,
+    "plan": {
+      "action_taken": false,
+      "authority": false,
+      "blocked_at": "diagnosis",
+      "blocking_codes": [
+        "SECTION_NOT_REPORTED"
+      ],
+      "code": "OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS",
+      "diagnosis_digest": "sha256:332402cfeb8d82c1ca5b9e3d5da68e4718f97f0fba05fe0ac2c0af5a2d9c4f5a",
+      "disposition": "REVISE",
+      "engine_called": false,
+      "mode": "plan",
+      "next_safe_action": "request-verified-dataset-facts",
+      "ok": false,
+      "reason": "blocking_findings_outstanding",
+      "session_id": "st-plan-app009-freeze",
+      "stages_not_run": [
+        "recipe"
+      ]
+    },
+    "reason": "blocking_findings_outstanding",
+    "schema": "studiotune.tune-agent-stdio.v1"
+  },
+  "live_adapt": {
+    "kind": "app009_live_sidecar_adapt_proof",
+    "sidecar_wrapper_code": "OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS",
+    "sidecar_ok": false,
+    "sidecar_authority": false,
+    "sidecar_action_taken": false,
+    "sidecar_plan_keys": [
+      "action_taken",
+      "authority",
+      "blocked_at",
+      "blocking_codes",
+      "code",
+      "diagnosis_digest",
+      "disposition",
+      "engine_called",
+      "mode",
+      "next_safe_action",
+      "ok",
+      "reason",
+      "session_id",
+      "stages_not_run"
+    ],
+    "sidecar_mentions_missing_admit": false,
+    "derived_runtimeAdmitted": true,
+    "home_adapt": {
+      "clarifications": [
+        "missing-parent",
+        "missing-dataset"
+      ],
+      "missing_admit_fired": false,
+      "admit_step": {
+        "id": "admit",
+        "label": "Admit runtime",
+        "description": "Admit the local runtime on this Mac (host python + cached snapshot). Fails closed if unavailable.",
+        "status": "ready",
+        "clarification": null
+      },
+      "train_step": {
+        "id": "train",
+        "label": "Train",
+        "description": "Start a local LoRA training run. Never spends, never fetches from the Hub, never runs on cloud GPUs.",
+        "status": "ready",
+        "clarification": null
+      },
+      "dataset": "UNKNOWN",
+      "parent": "UNKNOWN",
+      "diagnosis": null,
+      "authority": false,
+      "action_taken": false
+    },
+    "ipc_default_false_adapt": {
+      "clarifications": [
+        "missing-parent",
+        "missing-dataset",
+        "missing-admit"
+      ],
+      "missing_admit_fired": true,
+      "admit_step": {
+        "id": "admit",
+        "label": "Admit runtime",
+        "description": "Admit the local runtime on this Mac (host python + cached snapshot). Fails closed if unavailable.",
+        "status": "clarification",
+        "clarification": "missing-admit"
+      },
+      "train_step": {
+        "id": "train",
+        "label": "Train",
+        "description": "Start a local LoRA training run. Never spends, never fetches from the Hub, never runs on cloud GPUs.",
+        "status": "clarification",
+        "clarification": "missing-admit"
+      },
+      "dataset": "UNKNOWN",
+      "parent": "UNKNOWN",
+      "diagnosis": null,
+      "authority": false,
+      "action_taken": false
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "SIDECAR-WINDOW-SPAWN-2026-08-28-2036-WIB",
+  "generatedAtWib": "2026-08-28 20:36:58 WIB",
+  "host_pid": 22377,
+  "replaced_pid": 14179,
+  "spawn": {
+    "seen_at_wib": "2026-08-28 20:36:00 WIB",
+    "children": [
+      {
+        "pid": 22480,
+        "ppid": 22377,
+        "argv": "/Users/hizrianraz/.studiotune/tune-agent --stdio-json"
+      },
+      {
+        "pid": 22481,
+        "ppid": "unproven",
+        "argv": "/Users/hizrianraz/.studiotune/tune-agent --stdio-json"
+      }
+    ],
+    "lifetime": "ephemeral_stdio_ping_and_plan",
+    "gone_by_wib": "2026-08-28 20:36:01 WIB",
+    "binary_path_used": "/Users/hizrianraz/.studiotune/tune-agent",
+    "bundled_path": "StudioTune.app/Contents/MacOS/tune-agent",
+    "same_sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+    "note": "Frontend start still requests ~/.studiotune/tune-agent. Bytes match Contents/MacOS/tune-agent. Running host binary is the 20:22 unsigned build (bundled-prefer resolver not in this process)."
+  },
+  "live_stdio_this_hop": {
+    "ping_ok": true,
+    "plan_ok": false,
+    "plan_code": "OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS",
+    "disposition": "REVISE",
+    "authority": false,
+    "action_taken": false,
+    "train": false
+  },
+  "window_plancard_paint": "unproven",
+  "train_this_hop": false,
+  "beta_ready_claim": false,
+  "next_safe_action": "HOLD"
+}

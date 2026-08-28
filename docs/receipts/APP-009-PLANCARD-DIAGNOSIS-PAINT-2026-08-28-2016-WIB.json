@@ -1,0 +1,23 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-009-PLANCARD-DIAGNOSIS-PAINT-2026-08-28-2016-WIB",
+  "generatedAtWib": "2026-08-28 20:18:55 WIB",
+  "host": "HizrianacStudio.localdomain",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "parentSha": "7c9163cc4",
+  "lock": "CoS: paint proven plan/diagnosis on PlanCard. Same wire. No train. No Cloud Agent.",
+  "beta_ready_claim": false,
+  "proven": {
+    "rustTuneAgent": "39/39 including live sidecar plan and diagnosis HOLD map",
+    "frontendTargeted": "29/29 composer + shared card + diagnosis paint",
+    "composer": "requestPlan when connected, else local buildOutcomePlan",
+    "planCard": "home-plan-diagnosis HOLD \u00b7 REVISE \u00b7 OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS",
+    "invariants": "authority=false action_taken=false STDIO train still unknown"
+  },
+  "unproven": [
+    "banner painted in the running unsigned .app (needs a new frontend embed)",
+    "Developer ID / notarize / second Mac / merge"
+  ],
+  "next_unblocked_local_hop": "unsigned rebuild so the diagnosis banner is in the running window; raise cargo --release once if Auto-review blocks",
+  "next_safe_action": "HOLD"
+}

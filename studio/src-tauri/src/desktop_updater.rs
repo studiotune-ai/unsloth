@@ -47,6 +47,12 @@ pub(crate) async fn desktop_update_cleanup_armed() -> Result<bool, String> {
 pub(crate) async fn check_desktop_update(
     webview: tauri::Webview,
 ) -> Result<Option<DesktopUpdateMetadata>, String> {
+    // StudioTune HOLD build: no in-app updater fetch. Mirrors
+    // desktop_update_policy::STUDIOTUNE_UPDATER_ENABLED so both entry points
+    // fail-closed together instead of one silently reaching Unsloth's channel.
+    if !crate::desktop_update_policy::studiotune_updater_enabled() {
+        return Ok(None);
+    }
     let app = webview.app_handle().clone();
     let builder = webview.updater_builder().on_before_exit(move || {
         #[cfg(windows)]
