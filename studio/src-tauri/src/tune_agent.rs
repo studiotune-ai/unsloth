@@ -10,10 +10,11 @@
 //!
 //! Contract, deliberately narrow:
 //!
-//!  * The Rust host spawns Tune Agent as a sidecar process at a caller-
-//!    supplied absolute path (`~/.studiotune/tune-agent` by default). It never
-//!    downloads Tune Agent, never resolves it through `$PATH`, and never
-//!    fetches from Hub.
+//!  * The Rust host spawns Tune Agent as a sidecar process. Resolution
+//!    prefers a caller-supplied absolute/`~/` path, then the unsigned
+//!    packaged binary at `~/.studiotune/tune-agent`, then `$PATH`, then
+//!    `python -m tune_agent` from the sibling checkout. It never
+//!    downloads Tune Agent and never fetches from Hub.
 //!  * Communication is newline-delimited JSON over the sidecar's stdin /
 //!    stdout. Each request carries an `id` and a `method`. Each reply carries
 //!    the same `id` and either `ok: true, result: {...}` or `ok: false,
@@ -106,6 +107,11 @@ pub(crate) const TUNE_AGENT_REPO_ENV: &str = "STUDIOTUNE_TUNE_AGENT_REPO";
 /// entry point. On any other machine the env var wins.
 pub(crate) const TUNE_AGENT_REPO_DEFAULT: &str =
     "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/tune-agent";
+
+/// Default unsigned packaged sidecar, relative to the user home directory.
+/// Preferred over `$PATH` and the `python -m tune_agent` checkout fallback
+/// once a freeze has been installed at `~/.studiotune/tune-agent`.
+pub(crate) const TUNE_AGENT_PACKAGED_HOME_REL: &str = ".studiotune/tune-agent";
 
 /// State the Tauri app manages for the bridge.
 #[derive(Default)]
@@ -360,10 +366,10 @@ pub(crate) fn tune_agent_status(
 /// bridge to disconnected and records `last_error` for the rail to show.
 ///
 /// Resolution order (see `resolve_sidecar_launch`):
-///   1. Caller-supplied absolute-path binary (Settings override, packaged
-///      install location).
-///   2. `tune-agent` on `$PATH`.
-///   3. Local checkout at `$STUDIOTUNE_TUNE_AGENT_REPO` (or the developer
+///   1. Caller-supplied absolute or `~/...` binary (Settings override).
+///   2. Default packaged path `$HOME/.studiotune/tune-agent`.
+///   3. `tune-agent` on `$PATH`.
+///   4. Local checkout at `$STUDIOTUNE_TUNE_AGENT_REPO` (or the developer
 ///      default) invoked via `python3 -m tune_agent --stdio-json`.
 /// If none of these resolve, the bridge stays disconnected with a named
 /// reason; nothing is faked.
@@ -516,6 +522,12 @@ pub(crate) trait SidecarEnv {
     fn which_on_path(&self, name: &str) -> Option<PathBuf>;
     /// Read one environment variable. `None` for unset / non-utf8.
     fn env_var(&self, key: &str) -> Option<String>;
+    /// User home directory used to expand `~` and to locate the default
+    /// packaged sidecar at `~/.studiotune/tune-agent`. `None` means the
+    /// resolver must skip those probes rather than guess `$CWD`.
+    fn home_dir(&self) -> Option<PathBuf> {
+        None
+    }
 }
 
 pub(crate) struct RealSidecarEnv;
@@ -549,31 +561,63 @@ impl SidecarEnv for RealSidecarEnv {
     fn env_var(&self, key: &str) -> Option<String> {
         std::env::var(key).ok()
     }
+
+    fn home_dir(&self) -> Option<PathBuf> {
+        dirs::home_dir()
+    }
+}
+
+/// Expand a caller-supplied sidecar path. Absolute paths pass through.
+/// A leading `~/` is expanded against `SidecarEnv::home_dir`. Anything
+/// else (relative, bare `tune-agent`, unexpanded `~` without a home) is
+/// `None` so the resolver cannot spawn against `$CWD`.
+fn expand_requested_sidecar<E: SidecarEnv>(env: &E, path: &Path) -> Option<PathBuf> {
+    if path.is_absolute() {
+        return Some(path.to_path_buf());
+    }
+    let raw = path.to_str()?;
+    if raw == "~" || raw.starts_with("~/") {
+        let home = env.home_dir()?;
+        if raw == "~" {
+            return Some(home);
+        }
+        return Some(home.join(&raw[2..]));
+    }
+    None
+}
+
+/// Default unsigned packaged sidecar: `$HOME/.studiotune/tune-agent`.
+fn default_packaged_sidecar<E: SidecarEnv>(env: &E) -> Option<PathBuf> {
+    Some(env.home_dir()?.join(TUNE_AGENT_PACKAGED_HOME_REL))
 }
 
 /// Resolve which command the Rust bridge will use to spawn the sidecar.
 ///
 /// Order, honest and fail-closed:
-///   1. Caller-supplied `requested` — if it names a regular file, use it
-///      verbatim (both a packaged path or a Settings-supplied override
-///      lands here).
-///   2. `tune-agent` on `$PATH` (packaged install picked up from the shell
-///      environment).
-///   3. Local checkout fallback: `<STUDIOTUNE_TUNE_AGENT_REPO or default>`
+///   1. Caller-supplied `requested` — absolute, or `~/...` expanded via
+///      home, if it names a regular file.
+///   2. Default packaged path `$HOME/.studiotune/tune-agent` if present.
+///      Preferred over `$PATH` and `python -m` so a local freeze wins.
+///   3. `tune-agent` on `$PATH`.
+///   4. Local checkout fallback: `<STUDIOTUNE_TUNE_AGENT_REPO or default>`
 ///      as a directory + `python3` on `$PATH`. Emits `PythonModule` so the
-///      spawn goes through `python -m tune_agent --stdio-json`, which is
-///      what the tune-agent stdio_bridge exposes on developer machines.
-///   4. Otherwise `None`. The bridge records a named reason and the rail
+///      spawn goes through `python -m tune_agent --stdio-json`.
+///   5. Otherwise `None`. The bridge records a named reason and the rail
 ///      stays in HOLD; nothing is faked.
 pub(crate) fn resolve_sidecar_launch<E: SidecarEnv>(
     env: &E,
     requested: Option<&Path>,
 ) -> Option<SidecarLaunch> {
     if let Some(path) = requested {
-        if path.is_absolute() && env.is_regular_file(path) {
-            return Some(SidecarLaunch::Binary {
-                path: path.to_path_buf(),
-            });
+        if let Some(expanded) = expand_requested_sidecar(env, path) {
+            if env.is_regular_file(&expanded) {
+                return Some(SidecarLaunch::Binary { path: expanded });
+            }
+        }
+    }
+    if let Some(packaged) = default_packaged_sidecar(env) {
+        if env.is_regular_file(&packaged) {
+            return Some(SidecarLaunch::Binary { path: packaged });
         }
     }
     if let Some(binary) = env.which_on_path("tune-agent") {
@@ -1193,6 +1237,7 @@ mod tests {
         directories: HashSet<PathBuf>,
         path_lookups: std::collections::HashMap<String, PathBuf>,
         env_vars: std::collections::HashMap<String, String>,
+        home: Option<PathBuf>,
     }
 
     impl StubSidecarEnv {
@@ -1202,6 +1247,7 @@ mod tests {
                 directories: HashSet::new(),
                 path_lookups: std::collections::HashMap::new(),
                 env_vars: std::collections::HashMap::new(),
+                home: None,
             }
         }
         fn with_regular(mut self, path: &Path) -> Self {
@@ -1222,6 +1268,10 @@ mod tests {
             self.env_vars.insert(key.to_string(), value.to_string());
             self
         }
+        fn with_home(mut self, path: &Path) -> Self {
+            self.home = Some(path.to_path_buf());
+            self
+        }
     }
 
     impl SidecarEnv for StubSidecarEnv {
@@ -1236,6 +1286,9 @@ mod tests {
         }
         fn env_var(&self, key: &str) -> Option<String> {
             self.env_vars.get(key).cloned()
+        }
+        fn home_dir(&self) -> Option<PathBuf> {
+            self.home.clone()
         }
     }
 
@@ -1426,6 +1479,35 @@ mod tests {
     }
 
     #[test]
+    fn resolve_sidecar_launch_prefers_default_packaged_home_over_path() {
+        let home = PathBuf::from("/Users/hizrianraz");
+        let packaged = home.join(TUNE_AGENT_PACKAGED_HOME_REL);
+        let on_path = PathBuf::from("/usr/local/bin/tune-agent");
+        let env = StubSidecarEnv::new()
+            .with_home(&home)
+            .with_regular(&packaged)
+            .with_on_path("tune-agent", &on_path);
+        let launch = resolve_sidecar_launch(&env, None)
+            .expect("packaged home sidecar must win over $PATH");
+        assert_eq!(launch, SidecarLaunch::Binary { path: packaged });
+    }
+
+    #[test]
+    fn resolve_sidecar_launch_expands_tilde_requested_packaged_path() {
+        let home = PathBuf::from("/Users/hizrianraz");
+        let packaged = home.join(TUNE_AGENT_PACKAGED_HOME_REL);
+        let requested = PathBuf::from("~/.studiotune/tune-agent");
+        let on_path = PathBuf::from("/usr/local/bin/tune-agent");
+        let env = StubSidecarEnv::new()
+            .with_home(&home)
+            .with_regular(&packaged)
+            .with_on_path("tune-agent", &on_path);
+        let launch = resolve_sidecar_launch(&env, Some(&requested))
+            .expect("tilde requested path must expand to the packaged sidecar");
+        assert_eq!(launch, SidecarLaunch::Binary { path: packaged });
+    }
+
+    #[test]
     fn resolve_sidecar_launch_returns_none_when_nothing_resolves() {
         // No requested binary, no $PATH entry, no checkout — the bridge
         // must fail-close, not invent a launch.
@@ -1436,8 +1518,8 @@ mod tests {
     #[test]
     fn resolve_sidecar_launch_refuses_a_non_absolute_requested_binary() {
         // The frontend's default `~/.studiotune/tune-agent` is not
-        // absolute (we do not expand ~) — the resolver must skip it and
-        // move on rather than spawning something on `$CWD`.
+        // absolute. With no home_dir on the stub the resolver must skip
+        // it and move on rather than spawning something on `$CWD`.
         let requested = PathBuf::from("~/.studiotune/tune-agent");
         let on_path = PathBuf::from("/usr/local/bin/tune-agent");
         let env = StubSidecarEnv::new().with_on_path("tune-agent", &on_path);
