@@ -5,11 +5,13 @@ import { applyPlanRecipe } from "@/features/tune-agent";
 import { useNavigate } from "@tanstack/react-router";
 import type { FormEvent } from "react";
 import { useMemo, useState } from "react";
+import { loadTuneAgentBridge } from "@/features/tune-agent";
 import {
   type OutcomePlanCard,
   type OutcomePlanClarificationId,
   type OutcomePlanFacts,
   type OutcomePlanStep,
+  adaptBridgePlanToCard,
   buildOutcomePlan,
   isPromptEffectivelyEmpty,
   planCardHasHubId,
@@ -82,15 +84,23 @@ export function HomeComposer({
     [prompt],
   );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitDisabled) {
       setLastReason("Describe an outcome to plan.");
       return;
     }
-    // Pure local build. No Engine, no Hub, no network. Same prompt + facts
-    // must always yield the same plan card — the composer relies on that.
-    const nextCard = buildOutcomePlan(prompt, facts);
+    // Prefer the live sidecar plan (same wire as no-click IPC) so a
+    // diagnosis HOLD / REVISE paints on the card. Fall back to the pure
+    // local builder when Tune Agent is disconnected. Never trains.
+    const bridge = await loadTuneAgentBridge();
+    const live = bridge.getState().connected
+      ? await bridge.requestPlan(prompt)
+      : null;
+    const nextCard =
+      live !== null
+        ? adaptBridgePlanToCard(live, facts.runtimeAdmitted)
+        : buildOutcomePlan(prompt, facts);
     if (planCardHasHubId(nextCard)) {
       // Defence-in-depth. `buildOutcomePlan` already sanitises Hub ids, but
       // the composer refuses to render a card that would surface one so a

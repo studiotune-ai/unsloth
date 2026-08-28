@@ -141,6 +141,22 @@ function PlanCardHeader({ card }: { card: OutcomePlanCard }) {
       >
         {card.summary}
       </p>
+      {card.diagnosis !== null ? (
+        <p
+          data-testid="home-plan-diagnosis"
+          className="rounded-md border border-white/10 px-2 py-1 text-[11px]"
+          style={{
+            color: "var(--hold-fg)",
+            fontFamily: "var(--studiotune-font-mono)",
+          }}
+        >
+          HOLD · {card.diagnosis.disposition} · {card.diagnosis.code}
+          {card.diagnosis.nextSafeAction
+            ? ` · ${card.diagnosis.nextSafeAction}`
+            : ""}
+          {" · authority=false · action_taken=false"}
+        </p>
+      ) : null}
       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs md:grid-cols-4">
         <PlanCardField
           label="Method"

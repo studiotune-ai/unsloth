@@ -138,6 +138,16 @@ export type OutcomePlanCard = {
   /** Proposal invariants. */
   authority: false;
   action_taken: false;
+  /**
+   * Sidecar diagnosis when the card was adapted from a live plan wire.
+   * Local `buildOutcomePlan` always leaves this null. HOLD / REVISE is
+   * honest paint, not a train permission.
+   */
+  diagnosis: {
+    disposition: string;
+    code: string;
+    nextSafeAction: string;
+  } | null;
 };
 
 /**
@@ -368,6 +378,7 @@ export function buildOutcomePlan(
     },
     authority: false,
     action_taken: false,
+    diagnosis: null,
   };
 }
 
@@ -442,6 +453,11 @@ export type BridgePlanLike = {
   dataset?: string;
   cost?: string;
   recipe?: Record<string, unknown>;
+  diagnosis?: {
+    disposition?: string;
+    code?: string;
+    nextSafeAction?: string;
+  } | null;
 };
 
 /**
@@ -484,11 +500,25 @@ export function adaptBridgePlanToCard(
       : base.cost;
   const bridgeSummary =
     summary.length > 0 ? summary : base.summary;
+  const diagnosis =
+    plan.diagnosis &&
+    typeof plan.diagnosis.disposition === "string" &&
+    typeof plan.diagnosis.code === "string"
+      ? {
+          disposition: plan.diagnosis.disposition,
+          code: plan.diagnosis.code,
+          nextSafeAction:
+            typeof plan.diagnosis.nextSafeAction === "string"
+              ? plan.diagnosis.nextSafeAction
+              : "",
+        }
+      : null;
   return {
     ...base,
     method,
     runtime,
     cost,
     summary: bridgeSummary,
+    diagnosis,
   };
 }

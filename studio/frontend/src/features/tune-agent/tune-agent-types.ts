@@ -47,6 +47,16 @@ export type OutcomePlan = {
    * host; the recipe engine deserializes it into a data-recipe update.
    */
   recipe: Record<string, unknown>;
+  /**
+   * Show-only diagnosis from the sidecar plan wire. Present when the
+   * plan is HOLD / REVISE (e.g. OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS).
+   * Never implies train.
+   */
+  diagnosis?: {
+    disposition: string;
+    code: string;
+    nextSafeAction: string;
+  } | null;
 };
 
 /** Snapshot the host reads on each render. */

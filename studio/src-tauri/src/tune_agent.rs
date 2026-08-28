@@ -933,6 +933,14 @@ async fn ping_sidecar(launch: SidecarLaunch) -> Result<(), String> {
 /// `OutcomePlan` without a second mapper.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
+pub(crate) struct PlanDiagnosis {
+    pub disposition: String,
+    pub code: String,
+    pub next_safe_action: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct OutcomePlan {
     pub id: String,
     pub summary: String,
@@ -941,6 +949,8 @@ pub(crate) struct OutcomePlan {
     pub dataset: String,
     pub cost: String,
     pub recipe: serde_json::Value,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub diagnosis: Option<PlanDiagnosis>,
 }
 
 /// Build one stdio-json `plan` request line. Never includes `engine`,
@@ -1138,6 +1148,24 @@ pub(crate) fn map_stdio_plan(
                 "action_taken": false,
             })
         });
+    let diagnosis = {
+        let code = first_string(&[plan.get("code"), wrapper.get("code")]);
+        let next = first_string(&[plan.get("next_safe_action")]);
+        let disposition = first_string(&[plan.get("disposition")]).or_else(|| {
+            match code.as_deref() {
+                Some("OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS") => Some("REVISE".to_string()),
+                _ => None,
+            }
+        });
+        match (disposition, code) {
+            (Some(d), Some(c)) => Some(PlanDiagnosis {
+                disposition: d,
+                code: c,
+                next_safe_action: next.unwrap_or_default(),
+            }),
+            _ => None,
+        }
+    };
     OutcomePlan {
         id,
         summary,
@@ -1146,6 +1174,7 @@ pub(crate) fn map_stdio_plan(
         dataset,
         cost,
         recipe,
+        diagnosis,
     }
 }
 
@@ -1980,7 +2009,7 @@ mod tests {
     }
 
     fn well_formed_plan_hold() -> String {
-        r#"{"action_taken":false,"authority":false,"code":"OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS","id":"plan-1","method":"plan","ok":false,"plan":{"action_taken":false,"authority":false,"blocked_at":"diagnosis","code":"OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS","method":"UNKNOWN","next_safe_action":"request-verified-dataset-facts","ok":false,"reason":"blocking_findings_outstanding","runtime_backend":"UNKNOWN","dataset_identity":"UNKNOWN","session_id":"st-plan-1"},"reason":"blocking_findings_outstanding","schema":"studiotune.tune-agent-stdio.v1"}"#.to_string()
+        r#"{"action_taken":false,"authority":false,"code":"OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS","id":"plan-1","method":"plan","ok":false,"plan":{"action_taken":false,"authority":false,"blocked_at":"diagnosis","disposition":"REVISE","code":"OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS","method":"UNKNOWN","next_safe_action":"request-verified-dataset-facts","ok":false,"reason":"blocking_findings_outstanding","runtime_backend":"UNKNOWN","dataset_identity":"UNKNOWN","session_id":"st-plan-1"},"reason":"blocking_findings_outstanding","schema":"studiotune.tune-agent-stdio.v1"}"#.to_string()
     }
 
     #[test]
@@ -1997,6 +2026,10 @@ mod tests {
         assert_eq!(mapped.cost, "local-only");
         assert_eq!(mapped.recipe["authority"], false);
         assert_eq!(mapped.recipe["action_taken"], false);
+        let diagnosis = mapped.diagnosis.expect("diagnosis HOLD must paint");
+        assert_eq!(diagnosis.disposition, "REVISE");
+        assert_eq!(diagnosis.code, "OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS");
+        assert_eq!(diagnosis.next_safe_action, "request-verified-dataset-facts");
     }
 
     #[test]
