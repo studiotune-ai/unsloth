@@ -1,0 +1,56 @@
+{
+  "id": "APP-009-DATASET-UNSIGNED-REBUILD-2026-08-28-2318-WIB",
+  "hop": "APP-009",
+  "title": "Unsigned rebuild \u2014 APP-009 dataset-from-local-files bind in running window",
+  "timestamp_wib": "2026-08-28 23:18 WIB",
+  "repo": "studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": 1,
+  "head": "06aa390d448aa85734eb0c7a8b99cd932540ece4",
+  "head_short": "06aa390d4",
+  "old_pid": 9991,
+  "new_pid": 16882,
+  "host_sha256": "26ad40085b70d3b0e6b3282cbf95ce26152afdea51c975076cdfe1b6190e0bc6",
+  "sidecar_sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+  "sidecar_unchanged": true,
+  "dist": "index-B7uyOJ3t.js",
+  "dist_bind_strings": {
+    "bindAcceptedLocalFilesToHome": true,
+    "getAcceptedLocalDatasetPath": true
+  },
+  "runtimeAdmitted": false,
+  "codesign": {
+    "signature": "adhoc",
+    "team_identifier": "",
+    "developer_id": false,
+    "flags": "adhoc,linker-signed"
+  },
+  "signed": false,
+  "launch": "direct-exec",
+  "launch_detail": {
+    "mode": "direct-exec",
+    "pid": 16882,
+    "ppid": 16863,
+    "alive": true,
+    "open_app": false
+  },
+  "frontend_build": "pass",
+  "cargo_build": "pass",
+  "cargo_offline": true,
+  "pixel_proven": false,
+  "beta_ready_claim": false,
+  "train_this_hop": false,
+  "hub_contacted": false,
+  "sign_this_hop": false,
+  "notarize_this_hop": false,
+  "publish_this_hop": false,
+  "merge_desktop_app_11": false,
+  "verdict": "hold",
+  "notes": [
+    "Source APP-009 dataset bind was at 06aa390d4; running binary was parent-seed 23:12 (pid 9991) behind it.",
+    "Vite rebuild produced index-B7uyOJ3t.js with bindAcceptedLocalFilesToHome and getAcceptedLocalDatasetPath; runtimeAdmitted:!1 still.",
+    "cargo build --release --offline finished in 37.52s; adhoc binary swap; direct-exec relaunch pid 16882.",
+    "Sidecar unchanged sha256 25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491.",
+    "Pixel UNPROVEN. User-gated leftovers unchanged: Developer ID, notarize, second Mac."
+  ]
+}
