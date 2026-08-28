@@ -539,6 +539,12 @@ pub(crate) trait SidecarEnv {
     fn home_dir(&self) -> Option<PathBuf> {
         None
     }
+    /// Directory that holds the running host binary (`.app/Contents/MacOS`
+    /// when bundled). Used to find a sidecar shipped next to StudioTune
+    /// so the shipping app does not rely on `$PATH`.
+    fn bundled_sidecar_dir(&self) -> Option<PathBuf> {
+        None
+    }
 }
 
 pub(crate) struct RealSidecarEnv;
@@ -607,10 +613,13 @@ fn default_packaged_sidecar<E: SidecarEnv>(env: &E) -> Option<PathBuf> {
 /// Order, honest and fail-closed:
 ///   1. Caller-supplied `requested` — absolute, or `~/...` expanded via
 ///      home, if it names a regular file.
-///   2. Default packaged path `$HOME/.studiotune/tune-agent` if present.
-///      Preferred over `$PATH` and `python -m` so a local freeze wins.
-///   3. `tune-agent` on `$PATH`.
-///   4. Local checkout fallback: `<STUDIOTUNE_TUNE_AGENT_REPO or default>`
+///   2. Sidecar shipped next to the host binary
+///      (`<exe_dir>/tune-agent`, i.e. `.app/Contents/MacOS/tune-agent`).
+///      Preferred over `$HOME`, `$PATH`, and `python -m` so the shipping
+///      app does not rely on `$PATH`.
+///   3. Default packaged path `$HOME/.studiotune/tune-agent` if present.
+///   4. `tune-agent` on `$PATH`.
+///   5. Local checkout fallback: `<STUDIOTUNE_TUNE_AGENT_REPO or default>`
 ///      as a directory + `python3` on `$PATH`. Emits `PythonModule` so the
 ///      spawn goes through `python -m tune_agent --stdio-json`.
 ///   5. Otherwise `None`. The bridge records a named reason and the rail
@@ -624,6 +633,12 @@ pub(crate) fn resolve_sidecar_launch<E: SidecarEnv>(
             if env.is_regular_file(&expanded) {
                 return Some(SidecarLaunch::Binary { path: expanded });
             }
+        }
+    }
+    if let Some(dir) = env.bundled_sidecar_dir() {
+        let bundled = dir.join("tune-agent");
+        if env.is_regular_file(&bundled) {
+            return Some(SidecarLaunch::Binary { path: bundled });
         }
     }
     if let Some(packaged) = default_packaged_sidecar(env) {
@@ -1641,6 +1656,7 @@ mod tests {
         path_lookups: std::collections::HashMap<String, PathBuf>,
         env_vars: std::collections::HashMap<String, String>,
         home: Option<PathBuf>,
+        bundled_dir: Option<PathBuf>,
     }
 
     impl StubSidecarEnv {
@@ -1651,6 +1667,7 @@ mod tests {
                 path_lookups: std::collections::HashMap::new(),
                 env_vars: std::collections::HashMap::new(),
                 home: None,
+                bundled_dir: None,
             }
         }
         fn with_regular(mut self, path: &Path) -> Self {
@@ -1675,6 +1692,10 @@ mod tests {
             self.home = Some(path.to_path_buf());
             self
         }
+        fn with_bundled_dir(mut self, path: &Path) -> Self {
+            self.bundled_dir = Some(path.to_path_buf());
+            self
+        }
     }
 
     impl SidecarEnv for StubSidecarEnv {
@@ -1692,6 +1713,9 @@ mod tests {
         }
         fn home_dir(&self) -> Option<PathBuf> {
             self.home.clone()
+        }
+        fn bundled_sidecar_dir(&self) -> Option<PathBuf> {
+            self.bundled_dir.clone()
         }
     }
 
@@ -1893,6 +1917,24 @@ mod tests {
         let launch = resolve_sidecar_launch(&env, None)
             .expect("packaged home sidecar must win over $PATH");
         assert_eq!(launch, SidecarLaunch::Binary { path: packaged });
+    }
+
+    #[test]
+    fn resolve_sidecar_launch_prefers_bundled_sidecar_over_home_and_path() {
+        let home = PathBuf::from("/Users/hizrianraz");
+        let packaged = home.join(TUNE_AGENT_PACKAGED_HOME_REL);
+        let on_path = PathBuf::from("/usr/local/bin/tune-agent");
+        let bundled_dir = PathBuf::from("/App/StudioTune.app/Contents/MacOS");
+        let bundled = bundled_dir.join("tune-agent");
+        let env = StubSidecarEnv::new()
+            .with_home(&home)
+            .with_regular(&packaged)
+            .with_on_path("tune-agent", &on_path)
+            .with_bundled_dir(&bundled_dir)
+            .with_regular(&bundled);
+        let launch = resolve_sidecar_launch(&env, None)
+            .expect("bundled sidecar must win over home and $PATH");
+        assert_eq!(launch, SidecarLaunch::Binary { path: bundled });
     }
 
     #[test]
