@@ -75,6 +75,38 @@ pub(crate) const ADMITTED_MLX_SNAPSHOTS: &[&str] = &[
 pub(crate) const HF_HUB_OFFLINE_KEY: &str = "HF_HUB_OFFLINE";
 pub(crate) const HF_HUB_OFFLINE_VALUE: &str = "1";
 
+/// Wire-schema identifier the tune-agent stdio-json handshake stamps on its
+/// `ping` reply. The Desktop bridge fails-closed when the value on the wire
+/// does not match this constant — a mismatched schema means we are not
+/// talking to the StudioTune tune-agent surface, regardless of what happens
+/// to answer on stdout.
+///
+/// Source: tune-agent PR #2 / commit 3b263f6, branch
+/// `cursor/tune-agent-modes-ea50`, `tune_agent/stdio_bridge.py::STDIO_SCHEMA`.
+pub(crate) const TUNE_AGENT_STDIO_SCHEMA: &str =
+    "studiotune.tune-agent-stdio.v1";
+
+/// Fixed id the Desktop bridge sends on its handshake request. Echoed back
+/// verbatim by the sidecar; the reply must carry this exact id or the
+/// bridge treats the response as unmatched and fail-closes.
+pub(crate) const TUNE_AGENT_HANDSHAKE_ID: &str = "handshake-1";
+
+/// The one method the stdio-json surface allow-lists in this hop. Sending
+/// anything else would return `STDIO_METHOD_UNKNOWN` and the bridge would
+/// stay disconnected.
+pub(crate) const TUNE_AGENT_HANDSHAKE_METHOD: &str = "ping";
+
+/// Environment variable the receipt runner and the Rust bridge both honour
+/// for locating the tune-agent local checkout when no packaged binary is
+/// present. Kept in one place so a rename does not silently desync the two.
+pub(crate) const TUNE_AGENT_REPO_ENV: &str = "STUDIOTUNE_TUNE_AGENT_REPO";
+
+/// Fallback for `TUNE_AGENT_REPO_ENV` on this developer machine. Points at
+/// the sibling checkout that ships the `python -m tune_agent --stdio-json`
+/// entry point. On any other machine the env var wins.
+pub(crate) const TUNE_AGENT_REPO_DEFAULT: &str =
+    "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/tune-agent";
+
 /// State the Tauri app manages for the bridge.
 #[derive(Default)]
 pub(crate) struct TuneAgentState {
@@ -326,55 +358,72 @@ pub(crate) fn tune_agent_status(
 
 /// Attempt to spawn the Tune Agent sidecar. Fail-closed: any error resets the
 /// bridge to disconnected and records `last_error` for the rail to show.
+///
+/// Resolution order (see `resolve_sidecar_launch`):
+///   1. Caller-supplied absolute-path binary (Settings override, packaged
+///      install location).
+///   2. `tune-agent` on `$PATH`.
+///   3. Local checkout at `$STUDIOTUNE_TUNE_AGENT_REPO` (or the developer
+///      default) invoked via `python3 -m tune_agent --stdio-json`.
+/// If none of these resolve, the bridge stays disconnected with a named
+/// reason; nothing is faked.
 #[tauri::command]
 pub(crate) async fn tune_agent_start(
     state: tauri::State<'_, TuneAgentState>,
     binary: String,
 ) -> Result<TuneAgentStatus, String> {
-    let path = PathBuf::from(&binary);
-    if !path.is_absolute() {
-        let mut inner = state.inner.lock().map_err(|e| e.to_string())?;
-        inner.connected = false;
-        inner.last_error = Some(format!(
-            "tune_agent_start refused: binary {binary} is not an absolute path"
-        ));
-        return Ok(TuneAgentStatus {
-            connected: false,
-            binary: Some(binary),
-            admit: inner.admit.clone(),
-            last_error: inner.last_error.clone(),
-        });
-    }
+    let requested_raw = binary.clone();
+    let requested_path = PathBuf::from(&binary);
+    let requested_ref: Option<&Path> = if requested_path.as_os_str().is_empty() {
+        None
+    } else {
+        Some(requested_path.as_path())
+    };
 
-    let fs = RealAdmitFs;
-    if !fs.exists(&path) {
-        let mut inner = state.inner.lock().map_err(|e| e.to_string())?;
-        inner.binary = Some(path.clone());
-        inner.connected = false;
-        inner.last_error = Some(format!(
-            "tune_agent_start refused: no tune-agent binary at {binary}"
-        ));
-        return Ok(TuneAgentStatus {
-            connected: false,
-            binary: Some(binary),
-            admit: inner.admit.clone(),
-            last_error: inner.last_error.clone(),
-        });
-    }
+    let sidecar_env = RealSidecarEnv;
+    let launch = resolve_sidecar_launch(&sidecar_env, requested_ref);
 
-    // Ping the sidecar synchronously so a broken binary does not leave the
+    let launch = match launch {
+        Some(l) => l,
+        None => {
+            let mut inner = state.inner.lock().map_err(|e| e.to_string())?;
+            inner.connected = false;
+            inner.binary = if requested_raw.is_empty() {
+                None
+            } else {
+                Some(PathBuf::from(&requested_raw))
+            };
+            inner.last_error = Some(format!(
+                "tune_agent_start refused: could not resolve a tune-agent sidecar (requested={requested_raw}, no `tune-agent` on PATH, and no local checkout at ${TUNE_AGENT_REPO_ENV} / {TUNE_AGENT_REPO_DEFAULT})."
+            ));
+            return Ok(TuneAgentStatus {
+                connected: false,
+                binary: inner.binary.as_ref().map(|p| p.display().to_string()),
+                admit: inner.admit.clone(),
+                last_error: inner.last_error.clone(),
+            });
+        }
+    };
+
+    // Ping the sidecar synchronously so a broken launch does not leave the
     // rail thinking it is connected. Uses a short timeout so the UI does not
     // hang if the sidecar is misbehaving.
-    let ping_ok = ping_sidecar(&path).await;
+    let ping_result = ping_sidecar(launch.clone()).await;
 
+    let launch_display = launch.describe();
     let mut inner = state.inner.lock().map_err(|e| e.to_string())?;
-    inner.binary = Some(path.clone());
-    inner.connected = ping_ok.is_ok();
-    inner.last_error = ping_ok.err().map(|e| e.to_string());
+    inner.binary = match &launch {
+        SidecarLaunch::Binary { path } => Some(path.clone()),
+        SidecarLaunch::PythonModule { cwd, .. } => Some(cwd.clone()),
+    };
+    inner.connected = ping_result.is_ok();
+    inner.last_error = ping_result
+        .err()
+        .map(|e| format!("{e} (launch: {launch_display})"));
 
     Ok(TuneAgentStatus {
         connected: inner.connected,
-        binary: Some(path.display().to_string()),
+        binary: Some(launch_display),
         admit: inner.admit.clone(),
         last_error: inner.last_error.clone(),
     })
@@ -416,65 +465,410 @@ pub(crate) fn tune_agent_admit_runtime(
     }
 }
 
+/// How the Desktop bridge invokes the tune-agent sidecar. Kept as an enum so
+/// the two supported launch shapes — an absolute-path binary or a
+/// `python -m tune_agent` fallback from the local checkout — are visible in
+/// one type and the resolver cannot silently pick a third path.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum SidecarLaunch {
+    /// Spawn the binary at this absolute path with `--stdio-json`. Used
+    /// when the packaged sidecar is installed (or when the caller pointed
+    /// the frontend at their own dirty tree via a Settings override).
+    Binary { path: PathBuf },
+    /// Spawn `python_bin -m tune_agent --stdio-json` with the given working
+    /// directory. Used as an honest fallback on developer machines that
+    /// have the local tune-agent checkout but not a packaged binary. Never
+    /// resolves through `$PATH` beyond the python executable itself.
+    PythonModule { python: PathBuf, cwd: PathBuf },
+}
+
+impl SidecarLaunch {
+    /// Human-facing summary for the receipt / rail HOLD banner. Never
+    /// includes secrets — both fields are process paths the caller already
+    /// controls.
+    pub(crate) fn describe(&self) -> String {
+        match self {
+            SidecarLaunch::Binary { path } => {
+                format!("binary={}", path.display())
+            }
+            SidecarLaunch::PythonModule { python, cwd } => {
+                format!(
+                    "python -m tune_agent (python={} cwd={})",
+                    python.display(),
+                    cwd.display()
+                )
+            }
+        }
+    }
+}
+
+/// Environment view for the resolver so tests do not depend on `$PATH`,
+/// `$HOME`, or the developer checkout being present. `AdmitFs` already
+/// covers filesystem probes; this trait adds the two extra reads we need
+/// for the sidecar resolver.
+pub(crate) trait SidecarEnv {
+    /// Whether `path` exists as a regular file (not a symlink, not a dir).
+    fn is_regular_file(&self, path: &Path) -> bool;
+    /// Whether `path` exists as a directory.
+    fn is_directory(&self, path: &Path) -> bool;
+    /// Return an absolute path to `name` on `$PATH`, if any. `None` means
+    /// the resolver must move on to the next strategy.
+    fn which_on_path(&self, name: &str) -> Option<PathBuf>;
+    /// Read one environment variable. `None` for unset / non-utf8.
+    fn env_var(&self, key: &str) -> Option<String>;
+}
+
+pub(crate) struct RealSidecarEnv;
+
+impl SidecarEnv for RealSidecarEnv {
+    fn is_regular_file(&self, path: &Path) -> bool {
+        match std::fs::symlink_metadata(path) {
+            Ok(meta) => meta.file_type().is_file(),
+            Err(_) => false,
+        }
+    }
+
+    fn is_directory(&self, path: &Path) -> bool {
+        match std::fs::metadata(path) {
+            Ok(meta) => meta.is_dir(),
+            Err(_) => false,
+        }
+    }
+
+    fn which_on_path(&self, name: &str) -> Option<PathBuf> {
+        let path_env = std::env::var_os("PATH")?;
+        for dir in std::env::split_paths(&path_env) {
+            let candidate = dir.join(name);
+            if self.is_regular_file(&candidate) {
+                return Some(candidate);
+            }
+        }
+        None
+    }
+
+    fn env_var(&self, key: &str) -> Option<String> {
+        std::env::var(key).ok()
+    }
+}
+
+/// Resolve which command the Rust bridge will use to spawn the sidecar.
+///
+/// Order, honest and fail-closed:
+///   1. Caller-supplied `requested` — if it names a regular file, use it
+///      verbatim (both a packaged path or a Settings-supplied override
+///      lands here).
+///   2. `tune-agent` on `$PATH` (packaged install picked up from the shell
+///      environment).
+///   3. Local checkout fallback: `<STUDIOTUNE_TUNE_AGENT_REPO or default>`
+///      as a directory + `python3` on `$PATH`. Emits `PythonModule` so the
+///      spawn goes through `python -m tune_agent --stdio-json`, which is
+///      what the tune-agent stdio_bridge exposes on developer machines.
+///   4. Otherwise `None`. The bridge records a named reason and the rail
+///      stays in HOLD; nothing is faked.
+pub(crate) fn resolve_sidecar_launch<E: SidecarEnv>(
+    env: &E,
+    requested: Option<&Path>,
+) -> Option<SidecarLaunch> {
+    if let Some(path) = requested {
+        if path.is_absolute() && env.is_regular_file(path) {
+            return Some(SidecarLaunch::Binary {
+                path: path.to_path_buf(),
+            });
+        }
+    }
+    if let Some(binary) = env.which_on_path("tune-agent") {
+        return Some(SidecarLaunch::Binary { path: binary });
+    }
+    let repo_root = env
+        .env_var(TUNE_AGENT_REPO_ENV)
+        .unwrap_or_else(|| TUNE_AGENT_REPO_DEFAULT.to_string());
+    let repo_path = PathBuf::from(&repo_root);
+    let package_dir = repo_path.join("tune_agent");
+    if !env.is_directory(&repo_path) || !env.is_directory(&package_dir) {
+        return None;
+    }
+    // tune-agent's pyproject requires Python >= 3.11, so we try the
+    // explicitly-versioned python names first. `/usr/bin/python3` on
+    // recent macOS is Python 3.9 and cannot import the package; picking
+    // the unversioned `python3` first would silently fail there.
+    let python = env
+        .which_on_path("python3.13")
+        .or_else(|| env.which_on_path("python3.12"))
+        .or_else(|| env.which_on_path("python3.11"))
+        .or_else(|| env.which_on_path("python3"))
+        .or_else(|| env.which_on_path("python"))?;
+    Some(SidecarLaunch::PythonModule {
+        python,
+        cwd: repo_path,
+    })
+}
+
+/// Build the exact JSON request the Desktop bridge writes on stdin. Kept
+/// as its own function so the tune-agent side's regression tests can key
+/// on the same literal — and so the bridge cannot accidentally send an
+/// `id` other than `handshake-1`.
+pub(crate) fn make_handshake_request_line() -> String {
+    // Sort the keys and escape defensively via serde_json so a future
+    // refactor that changes the format has to update the tune-agent side
+    // too. The tune-agent stdio_bridge accepts any object shape as long as
+    // `method` names an allow-listed method; `params` is not required.
+    let request = serde_json::json!({
+        "id": TUNE_AGENT_HANDSHAKE_ID,
+        "method": TUNE_AGENT_HANDSHAKE_METHOD,
+    });
+    let mut line = serde_json::to_string(&request)
+        .expect("serialise handshake request to succeed");
+    line.push('\n');
+    line
+}
+
+/// Explicit failure taxonomy for the handshake. Tests key on the variant,
+/// so a refactor that changed the reason string still has one place to
+/// name the cause.
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum HandshakeError {
+    /// The response line did not parse as JSON.
+    ResponseNotJson { snippet: String },
+    /// The parsed response was not a JSON object at all.
+    ResponseNotObject,
+    /// `ok` was missing or not `true`. `error_code` / `error_reason` may
+    /// carry the sidecar's refusal code (`STDIO_METHOD_UNKNOWN`, …) when
+    /// the object is well-formed but the sidecar refused.
+    ResponseNotOk {
+        error_code: Option<String>,
+        error_reason: Option<String>,
+    },
+    /// The reply's `id` did not equal the request id we sent.
+    ResponseIdMismatch {
+        got: Option<String>,
+        expected: String,
+    },
+    /// The reply's `method` was not `ping`.
+    ResponseMethodMismatch { got: Option<String> },
+    /// The reply's `schema` did not equal `TUNE_AGENT_STDIO_SCHEMA`.
+    SchemaMismatch {
+        got: Option<String>,
+        expected: String,
+    },
+    /// `authority` was not literally `false` — an authority-claim slipping
+    /// through the handshake surface must fail-close, never be admitted.
+    AuthorityNotFalse { got: Option<bool> },
+    /// `action_taken` was not literally `false` — same reasoning as above.
+    ActionTakenNotFalse { got: Option<bool> },
+}
+
+impl std::fmt::Display for HandshakeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            HandshakeError::ResponseNotJson { snippet } => write!(
+                f,
+                "sidecar handshake failed: response line was not valid JSON. First 120 chars: {snippet}"
+            ),
+            HandshakeError::ResponseNotObject => write!(
+                f,
+                "sidecar handshake failed: response was not a JSON object."
+            ),
+            HandshakeError::ResponseNotOk {
+                error_code,
+                error_reason,
+            } => match (error_code, error_reason) {
+                (Some(code), Some(reason)) => write!(
+                    f,
+                    "sidecar handshake refused: code={code} reason={reason}."
+                ),
+                (Some(code), None) => write!(f, "sidecar handshake refused: code={code}."),
+                _ => write!(f, "sidecar handshake refused: ok=false."),
+            },
+            HandshakeError::ResponseIdMismatch { got, expected } => write!(
+                f,
+                "sidecar handshake failed: response id was {} but the bridge sent {expected}.",
+                got.as_deref().unwrap_or("<missing>")
+            ),
+            HandshakeError::ResponseMethodMismatch { got } => write!(
+                f,
+                "sidecar handshake failed: response method was {} but the bridge sent ping.",
+                got.as_deref().unwrap_or("<missing>")
+            ),
+            HandshakeError::SchemaMismatch { got, expected } => write!(
+                f,
+                "sidecar handshake failed: response schema was {} but the bridge only accepts {expected}.",
+                got.as_deref().unwrap_or("<missing>")
+            ),
+            HandshakeError::AuthorityNotFalse { got } => write!(
+                f,
+                "sidecar handshake refused: authority was {} — the handshake surface must never claim authority.",
+                got.map(|b| b.to_string()).unwrap_or_else(|| "<missing>".to_string())
+            ),
+            HandshakeError::ActionTakenNotFalse { got } => write!(
+                f,
+                "sidecar handshake refused: action_taken was {} — the handshake surface must never claim an action was taken.",
+                got.map(|b| b.to_string()).unwrap_or_else(|| "<missing>".to_string())
+            ),
+        }
+    }
+}
+
+/// Validate one raw response line the sidecar wrote to stdout against the
+/// full handshake contract. Pure — no IO, no clocks, no spawns — so the
+/// unit tests exercise every failure mode.
+pub(crate) fn validate_handshake_response(
+    raw_line: &str,
+) -> Result<(), HandshakeError> {
+    let trimmed = raw_line.trim();
+    let value: serde_json::Value = match serde_json::from_str(trimmed) {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(HandshakeError::ResponseNotJson {
+                snippet: trimmed.chars().take(120).collect(),
+            });
+        }
+    };
+    let obj = value
+        .as_object()
+        .ok_or(HandshakeError::ResponseNotObject)?;
+
+    let ok = obj.get("ok").and_then(serde_json::Value::as_bool);
+    if ok != Some(true) {
+        let error_code = obj
+            .get("code")
+            .and_then(serde_json::Value::as_str)
+            .map(str::to_string);
+        let error_reason = obj
+            .get("reason")
+            .and_then(serde_json::Value::as_str)
+            .map(str::to_string);
+        return Err(HandshakeError::ResponseNotOk {
+            error_code,
+            error_reason,
+        });
+    }
+
+    // Everything below is only checked once ok=true, i.e. once the sidecar
+    // has claimed a successful handshake. A malformed success is a failure.
+    let id = obj.get("id").and_then(serde_json::Value::as_str);
+    if id != Some(TUNE_AGENT_HANDSHAKE_ID) {
+        return Err(HandshakeError::ResponseIdMismatch {
+            got: id.map(str::to_string),
+            expected: TUNE_AGENT_HANDSHAKE_ID.to_string(),
+        });
+    }
+    let method = obj.get("method").and_then(serde_json::Value::as_str);
+    if method != Some(TUNE_AGENT_HANDSHAKE_METHOD) {
+        return Err(HandshakeError::ResponseMethodMismatch {
+            got: method.map(str::to_string),
+        });
+    }
+    let schema = obj.get("schema").and_then(serde_json::Value::as_str);
+    if schema != Some(TUNE_AGENT_STDIO_SCHEMA) {
+        return Err(HandshakeError::SchemaMismatch {
+            got: schema.map(str::to_string),
+            expected: TUNE_AGENT_STDIO_SCHEMA.to_string(),
+        });
+    }
+    let authority = obj.get("authority").and_then(serde_json::Value::as_bool);
+    if authority != Some(false) {
+        return Err(HandshakeError::AuthorityNotFalse { got: authority });
+    }
+    let action_taken = obj
+        .get("action_taken")
+        .and_then(serde_json::Value::as_bool);
+    if action_taken != Some(false) {
+        return Err(HandshakeError::ActionTakenNotFalse {
+            got: action_taken,
+        });
+    }
+    Ok(())
+}
+
 /// Ping helper — used by `tune_agent_start` to make sure the sidecar answers.
 ///
 /// Uses a short-lived `std::process::Command` (blocking) inside a
 /// `tokio::task::spawn_blocking` so we can bound it with `timeout` without
-/// pulling in a heavier async-process crate. If the sidecar does not answer
-/// with `{"ok":true}` on the first line within the deadline, the bridge is
-/// treated as disconnected.
-async fn ping_sidecar(binary: &Path) -> Result<(), String> {
+/// pulling in a heavier async-process crate. Fails-closed on any of:
+///   * spawn error (binary missing, permission denied, python not present);
+///   * stdin/stdout pipes not attached;
+///   * the first stdout line does not pass `validate_handshake_response`;
+///   * the sidecar closes stdout before writing a response;
+///   * the whole exchange takes longer than a short deadline.
+async fn ping_sidecar(launch: SidecarLaunch) -> Result<(), String> {
     use std::io::{BufRead, BufReader, Write};
     use std::process::{Command, Stdio};
     use std::time::{Duration, Instant};
 
-    let binary = binary.to_path_buf();
     let env = sidecar_env();
     let handle = tokio::task::spawn_blocking(move || -> Result<(), String> {
-        let mut child = Command::new(&binary)
-            .arg("--stdio-json")
+        let mut cmd = match &launch {
+            SidecarLaunch::Binary { path } => {
+                let mut c = Command::new(path);
+                c.arg("--stdio-json");
+                c
+            }
+            SidecarLaunch::PythonModule { python, cwd } => {
+                let mut c = Command::new(python);
+                c.arg("-m").arg("tune_agent").arg("--stdio-json");
+                c.current_dir(cwd);
+                c
+            }
+        };
+        let mut child = cmd
             .envs(env)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
-            .map_err(|e| format!("spawn failed: {e}"))?;
+            .map_err(|e| {
+                format!("spawn failed for {}: {e}", launch.describe())
+            })?;
 
         let mut stdin = child
             .stdin
             .take()
             .ok_or_else(|| "sidecar had no stdin".to_string())?;
-        writeln!(
-            stdin,
-            r#"{{"id":"ping","method":"ping","params":{{}}}}"#
-        )
-        .map_err(|e| format!("write ping failed: {e}"))?;
+        let request_line = make_handshake_request_line();
+        stdin
+            .write_all(request_line.as_bytes())
+            .map_err(|e| format!("write handshake request failed: {e}"))?;
         drop(stdin);
 
         let stdout = child
             .stdout
             .take()
             .ok_or_else(|| "sidecar had no stdout".to_string())?;
-        let reader = BufReader::new(stdout);
-        let deadline = Instant::now() + Duration::from_secs(3);
-        for line in reader.lines() {
+        let mut reader = BufReader::new(stdout);
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let mut line = String::new();
+        loop {
             if Instant::now() > deadline {
                 let _ = child.kill();
-                return Err("sidecar ping timed out".to_string());
+                return Err("sidecar handshake timed out after 5s".to_string());
             }
-            let line = line.map_err(|e| format!("read ping failed: {e}"))?;
-            if line.contains("\"ok\":true") && line.contains("\"id\":\"ping\"") {
-                let _ = child.kill();
-                return Ok(());
+            line.clear();
+            match reader.read_line(&mut line) {
+                Ok(0) => {
+                    let _ = child.kill();
+                    return Err(
+                        "sidecar closed stdout before answering handshake".to_string(),
+                    );
+                }
+                Ok(_) => {
+                    if line.trim().is_empty() {
+                        continue;
+                    }
+                    let result = validate_handshake_response(&line);
+                    let _ = child.kill();
+                    return result.map_err(|e| e.to_string());
+                }
+                Err(e) => {
+                    let _ = child.kill();
+                    return Err(format!("read handshake failed: {e}"));
+                }
             }
         }
-        let _ = child.kill();
-        Err("sidecar closed stdout before answering ping".to_string())
     })
     .await;
     match handle {
         Ok(inner) => inner,
-        Err(join) => Err(format!("ping task join error: {join}")),
+        Err(join) => Err(format!("handshake task join error: {join}")),
     }
 }
 
@@ -785,5 +1179,320 @@ mod tests {
                 "unexpected refusal for /usr/bin/python3: {other:?}. Expected WrongPythonPath or NotRegularFile."
             ),
         }
+    }
+
+    // -----------------------------------------------------------------
+    // Handshake response validator + resolver tests. These exercise the
+    // new Desktop → tune-agent stdio-json wire (tune-agent PR #2 commit
+    // 3b263f6) without spawning a process; the real-fs Mac test at the
+    // bottom does the live spawn when the sibling checkout is present.
+    // -----------------------------------------------------------------
+
+    struct StubSidecarEnv {
+        regular_files: HashSet<PathBuf>,
+        directories: HashSet<PathBuf>,
+        path_lookups: std::collections::HashMap<String, PathBuf>,
+        env_vars: std::collections::HashMap<String, String>,
+    }
+
+    impl StubSidecarEnv {
+        fn new() -> Self {
+            Self {
+                regular_files: HashSet::new(),
+                directories: HashSet::new(),
+                path_lookups: std::collections::HashMap::new(),
+                env_vars: std::collections::HashMap::new(),
+            }
+        }
+        fn with_regular(mut self, path: &Path) -> Self {
+            self.regular_files.insert(path.to_path_buf());
+            self
+        }
+        fn with_directory(mut self, path: &Path) -> Self {
+            self.directories.insert(path.to_path_buf());
+            self
+        }
+        fn with_on_path(mut self, name: &str, resolves_to: &Path) -> Self {
+            self.path_lookups
+                .insert(name.to_string(), resolves_to.to_path_buf());
+            self.regular_files.insert(resolves_to.to_path_buf());
+            self
+        }
+        fn with_env(mut self, key: &str, value: &str) -> Self {
+            self.env_vars.insert(key.to_string(), value.to_string());
+            self
+        }
+    }
+
+    impl SidecarEnv for StubSidecarEnv {
+        fn is_regular_file(&self, path: &Path) -> bool {
+            self.regular_files.contains(path)
+        }
+        fn is_directory(&self, path: &Path) -> bool {
+            self.directories.contains(path)
+        }
+        fn which_on_path(&self, name: &str) -> Option<PathBuf> {
+            self.path_lookups.get(name).cloned()
+        }
+        fn env_var(&self, key: &str) -> Option<String> {
+            self.env_vars.get(key).cloned()
+        }
+    }
+
+    #[test]
+    fn handshake_request_uses_id_handshake_one_and_method_ping() {
+        let line = make_handshake_request_line();
+        assert!(line.ends_with('\n'), "handshake line must be newline-terminated");
+        let value: serde_json::Value =
+            serde_json::from_str(line.trim()).expect("handshake line must be valid JSON");
+        let obj = value.as_object().expect("handshake line must be JSON object");
+        assert_eq!(
+            obj.get("id").and_then(|v| v.as_str()),
+            Some(TUNE_AGENT_HANDSHAKE_ID)
+        );
+        assert_eq!(
+            obj.get("method").and_then(|v| v.as_str()),
+            Some(TUNE_AGENT_HANDSHAKE_METHOD)
+        );
+    }
+
+    fn well_formed_pong() -> String {
+        format!(
+            r#"{{"ok":true,"id":"{TUNE_AGENT_HANDSHAKE_ID}","method":"{TUNE_AGENT_HANDSHAKE_METHOD}","schema":"{TUNE_AGENT_STDIO_SCHEMA}","authority":false,"action_taken":false}}"#
+        )
+    }
+
+    #[test]
+    fn validate_handshake_response_accepts_the_ping_success_shape() {
+        validate_handshake_response(&well_formed_pong())
+            .expect("well-formed pong must validate");
+    }
+
+    #[test]
+    fn validate_handshake_response_accepts_the_python_bridges_key_ordering() {
+        // stdio_bridge writes json.dumps(..., sort_keys=True). The sorted
+        // form has action_taken first, id near the middle. Validator must
+        // not depend on key order.
+        let sorted = r#"{"action_taken":false,"authority":false,"id":"handshake-1","method":"ping","ok":true,"schema":"studiotune.tune-agent-stdio.v1"}"#;
+        validate_handshake_response(sorted).expect("sort_keys=True form must validate");
+    }
+
+    #[test]
+    fn validate_handshake_response_refuses_a_non_json_line() {
+        let err = validate_handshake_response("not-json at all\n").expect_err("must refuse");
+        assert!(matches!(err, HandshakeError::ResponseNotJson { .. }));
+    }
+
+    #[test]
+    fn validate_handshake_response_refuses_a_json_array() {
+        let err = validate_handshake_response("[1,2,3]").expect_err("must refuse");
+        assert_eq!(err, HandshakeError::ResponseNotObject);
+    }
+
+    #[test]
+    fn validate_handshake_response_refuses_ok_false_and_surfaces_stdio_error_code() {
+        // stdio_bridge shape for STDIO_METHOD_UNKNOWN.
+        let raw = r#"{"ok":false,"code":"STDIO_METHOD_UNKNOWN","reason":"method_not_allowlisted","id":"handshake-1","authority":false,"action_taken":false}"#;
+        let err = validate_handshake_response(raw).expect_err("must refuse ok=false");
+        assert_eq!(
+            err,
+            HandshakeError::ResponseNotOk {
+                error_code: Some("STDIO_METHOD_UNKNOWN".to_string()),
+                error_reason: Some("method_not_allowlisted".to_string()),
+            }
+        );
+    }
+
+    #[test]
+    fn validate_handshake_response_refuses_mismatched_id() {
+        let raw = r#"{"ok":true,"id":"different","method":"ping","schema":"studiotune.tune-agent-stdio.v1","authority":false,"action_taken":false}"#;
+        let err = validate_handshake_response(raw).expect_err("must refuse wrong id");
+        assert_eq!(
+            err,
+            HandshakeError::ResponseIdMismatch {
+                got: Some("different".to_string()),
+                expected: TUNE_AGENT_HANDSHAKE_ID.to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn validate_handshake_response_refuses_mismatched_method() {
+        let raw = r#"{"ok":true,"id":"handshake-1","method":"train","schema":"studiotune.tune-agent-stdio.v1","authority":false,"action_taken":false}"#;
+        let err = validate_handshake_response(raw).expect_err("must refuse wrong method");
+        assert_eq!(
+            err,
+            HandshakeError::ResponseMethodMismatch {
+                got: Some("train".to_string()),
+            }
+        );
+    }
+
+    #[test]
+    fn validate_handshake_response_refuses_mismatched_schema() {
+        let raw = r#"{"ok":true,"id":"handshake-1","method":"ping","schema":"other-vendor.v99","authority":false,"action_taken":false}"#;
+        let err = validate_handshake_response(raw).expect_err("must refuse wrong schema");
+        assert!(matches!(err, HandshakeError::SchemaMismatch { .. }));
+    }
+
+    #[test]
+    fn validate_handshake_response_refuses_authority_true() {
+        // A ping surface must never claim authority. If a later hop tries
+        // to piggyback authority onto the handshake, this test catches it.
+        let raw = r#"{"ok":true,"id":"handshake-1","method":"ping","schema":"studiotune.tune-agent-stdio.v1","authority":true,"action_taken":false}"#;
+        let err = validate_handshake_response(raw).expect_err("authority must never be true");
+        assert_eq!(err, HandshakeError::AuthorityNotFalse { got: Some(true) });
+    }
+
+    #[test]
+    fn validate_handshake_response_refuses_action_taken_true() {
+        // Same reasoning: ping is a liveness probe, not an execute.
+        let raw = r#"{"ok":true,"id":"handshake-1","method":"ping","schema":"studiotune.tune-agent-stdio.v1","authority":false,"action_taken":true}"#;
+        let err = validate_handshake_response(raw)
+            .expect_err("action_taken must never be true");
+        assert_eq!(err, HandshakeError::ActionTakenNotFalse { got: Some(true) });
+    }
+
+    #[test]
+    fn validate_handshake_response_refuses_missing_authority() {
+        let raw = r#"{"ok":true,"id":"handshake-1","method":"ping","schema":"studiotune.tune-agent-stdio.v1","action_taken":false}"#;
+        let err = validate_handshake_response(raw).expect_err("missing authority must fail-close");
+        assert_eq!(err, HandshakeError::AuthorityNotFalse { got: None });
+    }
+
+    #[test]
+    fn resolve_sidecar_launch_prefers_the_caller_supplied_absolute_binary() {
+        let requested = PathBuf::from("/opt/studiotune/tune-agent");
+        let env = StubSidecarEnv::new().with_regular(&requested);
+        let launch = resolve_sidecar_launch(&env, Some(&requested))
+            .expect("resolver must pick the caller-supplied binary");
+        assert_eq!(
+            launch,
+            SidecarLaunch::Binary {
+                path: requested.clone()
+            }
+        );
+    }
+
+    #[test]
+    fn resolve_sidecar_launch_falls_back_to_path_when_requested_binary_missing() {
+        let requested = PathBuf::from("/does/not/exist");
+        let on_path = PathBuf::from("/usr/local/bin/tune-agent");
+        let env = StubSidecarEnv::new().with_on_path("tune-agent", &on_path);
+        let launch = resolve_sidecar_launch(&env, Some(&requested))
+            .expect("resolver must fall back to $PATH");
+        assert_eq!(launch, SidecarLaunch::Binary { path: on_path });
+    }
+
+    #[test]
+    fn resolve_sidecar_launch_uses_python_module_when_no_binary_but_checkout_present() {
+        let repo = PathBuf::from(TUNE_AGENT_REPO_DEFAULT);
+        let pkg = repo.join("tune_agent");
+        let python = PathBuf::from("/opt/homebrew/bin/python3");
+        let env = StubSidecarEnv::new()
+            .with_directory(&repo)
+            .with_directory(&pkg)
+            .with_on_path("python3", &python);
+        let launch = resolve_sidecar_launch(&env, None)
+            .expect("resolver must fall back to python -m from the checkout");
+        assert_eq!(
+            launch,
+            SidecarLaunch::PythonModule {
+                python,
+                cwd: repo
+            }
+        );
+    }
+
+    #[test]
+    fn resolve_sidecar_launch_honours_env_override_for_the_checkout_path() {
+        let repo = PathBuf::from("/private/repos/tune-agent");
+        let pkg = repo.join("tune_agent");
+        let python = PathBuf::from("/opt/homebrew/bin/python3");
+        let env = StubSidecarEnv::new()
+            .with_env(TUNE_AGENT_REPO_ENV, repo.to_str().unwrap())
+            .with_directory(&repo)
+            .with_directory(&pkg)
+            .with_on_path("python3", &python);
+        let launch = resolve_sidecar_launch(&env, None)
+            .expect("env-supplied checkout path must be honoured");
+        assert_eq!(
+            launch,
+            SidecarLaunch::PythonModule {
+                python,
+                cwd: repo
+            }
+        );
+    }
+
+    #[test]
+    fn resolve_sidecar_launch_returns_none_when_nothing_resolves() {
+        // No requested binary, no $PATH entry, no checkout — the bridge
+        // must fail-close, not invent a launch.
+        let env = StubSidecarEnv::new();
+        assert!(resolve_sidecar_launch(&env, None).is_none());
+    }
+
+    #[test]
+    fn resolve_sidecar_launch_refuses_a_non_absolute_requested_binary() {
+        // The frontend's default `~/.studiotune/tune-agent` is not
+        // absolute (we do not expand ~) — the resolver must skip it and
+        // move on rather than spawning something on `$CWD`.
+        let requested = PathBuf::from("~/.studiotune/tune-agent");
+        let on_path = PathBuf::from("/usr/local/bin/tune-agent");
+        let env = StubSidecarEnv::new().with_on_path("tune-agent", &on_path);
+        let launch = resolve_sidecar_launch(&env, Some(&requested))
+            .expect("resolver must skip non-absolute requested paths");
+        assert_eq!(launch, SidecarLaunch::Binary { path: on_path });
+    }
+
+    // -----------------------------------------------------------------
+    // Live handshake against the sibling tune-agent checkout. Only runs
+    // on macOS (this branch's target) and only when either `tune-agent`
+    // is on PATH or the local checkout at STUDIOTUNE_TUNE_AGENT_REPO
+    // has a `tune_agent/` package + a python3 on PATH. Skips with a
+    // clear message otherwise — a missing sibling checkout must not
+    // fail the test suite on other developer machines.
+    //
+    // The APP-008 receipt runner keys on the test name below to move
+    // sidecar-handshake from unproven → pass, so do not rename it
+    // without updating docs/receipts/generate-app-008.mjs.
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn real_mac_sidecar_handshake_speaks_studiotune_tune_agent_stdio_v1() {
+        // Discover the launch the way tune_agent_start would — using the
+        // real sidecar-env probe, not the stubs.
+        let env = RealSidecarEnv;
+        let launch = match resolve_sidecar_launch(&env, None) {
+            Some(l) => l,
+            None => {
+                eprintln!(
+                    "SKIP real_mac_sidecar_handshake_speaks_studiotune_tune_agent_stdio_v1: \
+                     no tune-agent binary on PATH and no local checkout at \
+                     ${TUNE_AGENT_REPO_ENV} / {TUNE_AGENT_REPO_DEFAULT}."
+                );
+                return;
+            }
+        };
+        // Run the async ping inside a small tokio runtime. The bridge
+        // uses spawn_blocking + tokio internally, so we need a runtime,
+        // but we do not pull in tokio_test.
+        let rt = match tokio::runtime::Runtime::new() {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!(
+                    "SKIP real_mac_sidecar_handshake_speaks_studiotune_tune_agent_stdio_v1: \
+                     could not build tokio runtime: {e}"
+                );
+                return;
+            }
+        };
+        let result = rt.block_on(ping_sidecar(launch.clone()));
+        result.unwrap_or_else(|e| {
+            panic!(
+                "real handshake must succeed against {} but failed: {e}",
+                launch.describe()
+            )
+        });
     }
 }

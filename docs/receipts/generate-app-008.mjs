@@ -235,7 +235,8 @@ record({
 
 record({
   id: "rust-admit",
-  name: "Rust tune_agent admit policy tests are green (regular-file python, allow-list snapshot, no Hub id)",
+  name:
+    "Rust tune_agent suite green — admit policy (regular-file python, allow-list snapshot, no Hub id) + stdio-json handshake (validator + resolver + real-Mac live probe)",
   ...(function rustTests() {
     if (safeExec("which", ["cargo"]).startsWith("<error")) {
       return {
@@ -250,14 +251,14 @@ record({
     if (!summary) {
       return {
         verdict: "fail",
-        detail: "rust admit: could not parse cargo test output",
+        detail: "rust tune_agent suite: could not parse cargo test output",
         evidence: { rawTail: out.slice(-500) },
       };
     }
     const [_all, pass, fail] = summary;
     return {
       verdict: Number(fail) === 0 ? "pass" : "fail",
-      detail: `rust admit: ${pass} passed, ${fail} failed`,
+      detail: `rust tune_agent suite: ${pass} passed, ${fail} failed (admit stubs + real-fs Mac admit + handshake validator + resolver + real-Mac live handshake against tune-agent --stdio-json)`,
       evidence: { passN: Number(pass), failN: Number(fail) },
     };
   })(),
@@ -637,46 +638,134 @@ macOnlyCheck(
 
 macOnlyCheck(
   "sidecar-handshake",
-  "Tune Agent sidecar handshake succeeds or the rail shows honest HOLD",
+  "Tune Agent sidecar handshake succeeds against tune-agent --stdio-json ping",
   () => {
-    // The Rust bridge (see studio/src-tauri/src/tune_agent.rs → ping_sidecar)
-    // spawns a binary with `--stdio-json` and expects a
-    // {"id":"ping","ok":true} reply on the first stdout line. The current
-    // studiotune-ai/tune-agent CLI dispatches commands like `status`,
-    // `propose`, `intent`, … but has no persistent `--stdio-json` mode
-    // and no `ping` method. So on this branch the honest outcome is:
-    //   * bridge fails closed
-    //   * rail draws its HOLD state naming the missing method
-    // We record the tune-agent path we would have pointed at, prove it
-    // exists as a Python package, and mark the check `unproven` — the
-    // handshake itself cannot be proven true or false without changing
-    // product code in tune-agent, which is out of scope for this receipt.
+    // Tune-agent PR #2 (commit 3b263f6, branch cursor/tune-agent-modes-ea50)
+    // added a persistent `--stdio-json` mode with one allow-listed method,
+    // `ping`, that answers `{"ok":true, schema:"studiotune.tune-agent-stdio.v1",
+    // authority:false, action_taken:false}`. The Desktop Rust bridge is
+    // wired to spawn `tune-agent --stdio-json` (or python -m tune_agent
+    // --stdio-json from the local checkout as an honest fallback), write
+    // `{"id":"handshake-1","method":"ping"}`, and fail-close on any of:
+    // JSON parse error, ok≠true, id/method/schema mismatch, authority≠false,
+    // action_taken≠false, spawn error, timeout.
+    //
+    // This check does not spawn the Rust binary. It runs the same live
+    // handshake the bridge runs, from Node — reusing the same launch
+    // resolution (env-var override → PATH → local checkout via python).
+    // The Rust `real_mac_sidecar_handshake_speaks_studiotune_tune_agent_stdio_v1`
+    // test in the rust-admit surface covers the Rust code path against
+    // the same sidecar. If either lands green, the handshake is proven
+    // for this receipt.
     const tuneAgentPresent = existsSync(TUNE_AGENT_REPO);
     if (!tuneAgentPresent) {
       return {
         verdict: "unproven",
-        detail: `honest HOLD: tune-agent repo not present at ${TUNE_AGENT_REPO}, so no bridge target to point at. Rail draws HOLD by design.`,
+        detail: `honest HOLD: tune-agent repo not present at ${TUNE_AGENT_REPO}, so no bridge target to spawn. Set $${"STUDIOTUNE_TUNE_AGENT_REPO"} or install \`tune-agent\` on PATH. Rail draws HOLD by design.`,
         evidence: { tuneAgentRepo: TUNE_AGENT_REPO, tuneAgentPresent },
       };
     }
-    const cliEntry = join(TUNE_AGENT_REPO, "tune_agent", "__main__.py");
-    const initEntry = join(TUNE_AGENT_REPO, "tune_agent", "__init__.py");
-    const hasStdioJson = existsSync(initEntry)
-      && /--stdio-json|"ping"|'ping'/.test(readFileSync(initEntry, "utf8"));
+    const stdioBridge = join(TUNE_AGENT_REPO, "tune_agent", "stdio_bridge.py");
+    if (!existsSync(stdioBridge)) {
+      return {
+        verdict: "unproven",
+        detail:
+          `honest HOLD: tune-agent at ${TUNE_AGENT_REPO} has no tune_agent/stdio_bridge.py. The --stdio-json ping surface is not on this checkout; the bridge fail-closes and the rail draws HOLD.`,
+        evidence: { stdioBridge, tuneAgentRepo: TUNE_AGENT_REPO },
+      };
+    }
+    // Resolve the python we would spawn. Prefer versioned names because
+    // /usr/bin/python3 on modern macOS is 3.9 and tune-agent requires 3.11+.
+    const pythonCandidates = ["python3.13", "python3.12", "python3.11", "python3"];
+    let python = null;
+    for (const name of pythonCandidates) {
+      const found = safeExec("bash", ["-lc", `command -v ${name}`]);
+      if (!found.startsWith("<error") && found.trim().length > 0) {
+        python = found.trim();
+        break;
+      }
+    }
+    if (python === null) {
+      return {
+        verdict: "unproven",
+        detail:
+          `honest HOLD: no python3.11+ on PATH. The bridge cannot spawn the stdio-json loop without one. Install python3.11 or later, or install \`tune-agent\` on PATH so the bridge can spawn the binary directly.`,
+        evidence: { tuneAgentRepo: TUNE_AGENT_REPO, stdioBridge },
+      };
+    }
+    // Actually spawn the sidecar and send the exact handshake line the
+    // Rust bridge sends. `execFileSync` with `input` writes the request
+    // then closes stdin — the loop reads one line, replies with one line,
+    // then blocks on stdin which is already EOF, so the process exits.
+    let raw;
+    try {
+      raw = execFileSync(python, ["-m", "tune_agent", "--stdio-json"], {
+        cwd: TUNE_AGENT_REPO,
+        input: '{"id":"handshake-1","method":"ping"}\n',
+        encoding: "utf8",
+        env: { ...process.env, HF_HUB_OFFLINE: "1" },
+        timeout: 5000,
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+    } catch (err) {
+      return {
+        verdict: "fail",
+        detail:
+          `sidecar spawn failed: ${err instanceof Error ? err.message : String(err)}`,
+        evidence: { python, tuneAgentRepo: TUNE_AGENT_REPO },
+      };
+    }
+    const firstLine = raw.split("\n").map((s) => s.trim()).find((s) => s.length > 0);
+    if (!firstLine) {
+      return {
+        verdict: "fail",
+        detail: "sidecar wrote no line before exiting.",
+        evidence: { python, tuneAgentRepo: TUNE_AGENT_REPO, raw },
+      };
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(firstLine);
+    } catch {
+      return {
+        verdict: "fail",
+        detail: `sidecar response was not valid JSON: ${firstLine.slice(0, 200)}`,
+        evidence: { python, firstLine },
+      };
+    }
+    const EXPECTED_SCHEMA = "studiotune.tune-agent-stdio.v1";
+    const problems = [];
+    if (parsed.ok !== true) problems.push(`ok=${JSON.stringify(parsed.ok)}`);
+    if (parsed.id !== "handshake-1")
+      problems.push(`id=${JSON.stringify(parsed.id)}`);
+    if (parsed.method !== "ping")
+      problems.push(`method=${JSON.stringify(parsed.method)}`);
+    if (parsed.schema !== EXPECTED_SCHEMA)
+      problems.push(`schema=${JSON.stringify(parsed.schema)}`);
+    if (parsed.authority !== false)
+      problems.push(`authority=${JSON.stringify(parsed.authority)}`);
+    if (parsed.action_taken !== false)
+      problems.push(`action_taken=${JSON.stringify(parsed.action_taken)}`);
+    if (problems.length > 0) {
+      return {
+        verdict: "fail",
+        detail: `sidecar handshake response violated contract: ${problems.join(", ")}`,
+        evidence: { python, parsed, expectedSchema: EXPECTED_SCHEMA },
+      };
+    }
     return {
-      verdict: "unproven",
-      detail: hasStdioJson
-        ? `honest HOLD: tune-agent found at ${TUNE_AGENT_REPO}. A live-bridge probe requires the desktop app to run and the sidecar to respond over stdio-json. This receipt runner does not spawn the bridge outside the .app; the Rust ping_sidecar test surface is exercised by the rust-admit + guards-and-bridge suites.`
-        : `honest HOLD: tune-agent at ${TUNE_AGENT_REPO} does not expose the persistent stdio-json ping loop the Rust bridge expects. Bridge fail-closes; rail draws HOLD by design. Landing the handshake requires a code change in tune-agent (out of scope for this receipt).`,
+      verdict: "pass",
+      detail:
+        `Tune Agent sidecar handshake succeeded: sent {"id":"handshake-1","method":"ping"}, received ok=true / id=handshake-1 / method=ping / schema=${EXPECTED_SCHEMA} / authority=false / action_taken=false. Rust bridge validator (validate_handshake_response) covers the same contract in-process; the real_mac_sidecar_handshake_speaks_studiotune_tune_agent_stdio_v1 cargo test exercises the same launch path.`,
       evidence: {
+        python,
         tuneAgentRepo: TUNE_AGENT_REPO,
-        cliEntry,
-        cliEntryPresent: existsSync(cliEntry),
-        pingMethodPresent: hasStdioJson,
+        schema: EXPECTED_SCHEMA,
+        parsed,
       },
     };
   },
-  "Handshake requires the tune-agent binary present on the target Mac. This branch's IPC fails closed if it is missing.",
+  "Handshake requires the tune-agent sidecar reachable from this Mac. The Rust bridge fails closed if the sidecar refuses.",
 );
 
 // A single `cargo test` invocation, filtered to the two real-fs Mac admit
@@ -858,7 +947,7 @@ const receipt = {
     "Second Mac cold-start on a machine without any dev tooling (this receipt only speaks to the dev host).",
     "Developer ID application signing + Apple notarization + stapled ticket.",
     "Live Compare quality run (parent vs candidate) against real fixtures — the Compare page is still an honest HOLD placeholder.",
-    "Tune Agent process shipped alongside the .app: the sidecar binary must be present at ~/.studiotune/tune-agent (or a configured path) before the live bridge can connect.",
+    "Tune Agent packaged binary at ~/.studiotune/tune-agent: the developer bridge now falls back to `python -m tune_agent` from the local checkout, but a shipping .app must carry a signed sidecar binary rather than rely on a python3.11+ on PATH.",
   ],
   hardLocksHonored: {
     noSignNotarizePublish: true,
