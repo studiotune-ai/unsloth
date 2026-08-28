@@ -678,4 +678,112 @@ mod tests {
             &["ping", "set_mode", "request_plan", "grant", "train", "shutdown"]
         );
     }
+
+    // The two tests below exercise the admit policy against the *real*
+    // filesystem, not the StubFs. They only run when this crate is built on
+    // macOS and only when the framework python and the allow-listed MLX
+    // snapshot are actually present on the host. If either is missing the
+    // test skips with a clear message rather than a false pass. On any other
+    // host these tests are compiled out — evaluate_admit against RealAdmitFs
+    // is a macOS-only claim.
+    //
+    // The APP-008 receipt runner keys on the specific test names below to
+    // record `admit-succeeds` and `admit-refuses-symlink` verdicts, so do
+    // not rename them without updating docs/receipts/generate-app-008.mjs.
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn real_mac_admit_passes_with_framework_python_and_allowlisted_snapshot() {
+        let fs = RealAdmitFs;
+        let home = match dirs::home_dir() {
+            Some(h) => h,
+            None => {
+                eprintln!(
+                    "SKIP real_mac_admit_passes_with_framework_python_and_allowlisted_snapshot: \
+                     no home dir resolved"
+                );
+                return;
+            }
+        };
+        let python = std::path::PathBuf::from(ADMITTED_HOST_PYTHON);
+        if !fs.is_regular_file(&python) {
+            eprintln!(
+                "SKIP real_mac_admit_passes_with_framework_python_and_allowlisted_snapshot: \
+                 {ADMITTED_HOST_PYTHON} is not a regular file on this host"
+            );
+            return;
+        }
+        let snapshot = ADMITTED_MLX_SNAPSHOTS[0];
+        let snapshot_abs = expand_home(snapshot, &home);
+        if !fs.exists(&snapshot_abs) {
+            eprintln!(
+                "SKIP real_mac_admit_passes_with_framework_python_and_allowlisted_snapshot: \
+                 snapshot {} not present on this host",
+                snapshot_abs.display()
+            );
+            return;
+        }
+        let outcome = evaluate_admit(
+            &fs,
+            &home,
+            true,
+            ADMITTED_HOST_PYTHON,
+            snapshot,
+            &[],
+        )
+        .expect("real Mac admit should pass with framework python + allow-listed snapshot");
+        assert!(outcome.admitted);
+        assert_eq!(outcome.hf_hub_offline, "1");
+        assert_eq!(outcome.python, ADMITTED_HOST_PYTHON);
+        assert_eq!(outcome.snapshot, snapshot);
+        assert!(outcome.reason.is_none());
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn real_mac_admit_refuses_slash_usr_bin_python3() {
+        // /usr/bin/python3 is the "plain python" the policy must never admit.
+        // On older macOS it is a symlink; on modern macOS it is a stub
+        // launcher (still a regular file) — but at a path that does not match
+        // ADMITTED_HOST_PYTHON, so admit MUST refuse it. The refusal reason
+        // is one of two documented AdmitError variants:
+        //   * NotRegularFile — hit when /usr/bin/python3 is a symlink AND the
+        //     policy is asked to admit the framework path but is fed
+        //     /usr/bin/python3 as `python`. Only reachable if the caller lied
+        //     about the path.
+        //   * WrongPythonPath — the honest, common refusal: /usr/bin/python3
+        //     is not the framework path, so it is rejected before the
+        //     regular-file test even runs.
+        let fs = RealAdmitFs;
+        let home = match dirs::home_dir() {
+            Some(h) => h,
+            None => {
+                eprintln!(
+                    "SKIP real_mac_admit_refuses_slash_usr_bin_python3: no home dir resolved"
+                );
+                return;
+            }
+        };
+        let err = evaluate_admit(
+            &fs,
+            &home,
+            true,
+            "/usr/bin/python3",
+            ADMITTED_MLX_SNAPSHOTS[0],
+            &[],
+        )
+        .expect_err("/usr/bin/python3 must be refused by admit on macOS");
+        match err {
+            AdmitError::WrongPythonPath { got, expected } => {
+                assert_eq!(got, "/usr/bin/python3");
+                assert_eq!(expected, ADMITTED_HOST_PYTHON);
+            }
+            AdmitError::NotRegularFile { path } => {
+                assert_eq!(path, "/usr/bin/python3");
+            }
+            other => panic!(
+                "unexpected refusal for /usr/bin/python3: {other:?}. Expected WrongPythonPath or NotRegularFile."
+            ),
+        }
+    }
 }
