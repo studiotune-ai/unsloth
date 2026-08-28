@@ -107,15 +107,21 @@ function hydrateFromStore(): AcceptedLocalDatasetBind | null {
       return null;
     }
     const rec = parsed as { path?: unknown; hash?: unknown; authority?: unknown };
-    if (!isPersistableBind({
-      path: rec.path,
-      hash: rec.hash,
-      authority: rec.authority,
-    })) {
+    const path = rec.path;
+    const hash = rec.hash;
+    if (
+      typeof path !== "string" ||
+      path.trim().length === 0 ||
+      typeof hash !== "string" ||
+      hash.length === 0 ||
+      rec.authority !== false ||
+      isRemoteRef(path) ||
+      looksLikeHubId(path)
+    ) {
       ls.removeItem(HOME_DATASET_BIND_STORAGE_KEY);
       return null;
     }
-    return { path: rec.path, hash: rec.hash, authority: false };
+    return { path, hash, authority: false };
   } catch {
     try {
       ls.removeItem(HOME_DATASET_BIND_STORAGE_KEY);
