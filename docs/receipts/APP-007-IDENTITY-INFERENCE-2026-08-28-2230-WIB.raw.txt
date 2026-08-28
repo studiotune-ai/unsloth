@@ -1,0 +1,13 @@
+adapter sha256 match 4842bc09742a8bc72db1388d375fe025179697ded5deba8ddaccfc5a5b9ea8b3
+snapshot dir ok (9 entries) /Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3
+generate path: mlx_lm.generate.generate -> <function generate at 0x126c14ae0>
+mlx_lm_version=0.31.3 python=/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13
+prompt='Reply with the single word ping.' max_tokens=16 temp=0
+loading parent snapshot (no adapter)...
+parent loaded in 0.5s
+generating parent...
+parent_text='\n\nI have a long story to tell you about my life.\n\nI have a' in 0.4s
+loading parent+adapter adapter_path=/tmp/studiotune-cli-007/adapter...
+candidate loaded in 0.3s
+generating candidate...
+candidate_text='\n\nI have a long story to tell you about my life.\n\nI have a' in 0.2s

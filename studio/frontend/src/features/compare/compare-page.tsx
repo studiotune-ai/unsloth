@@ -17,9 +17,9 @@ import {
  * land it should label them as reference, not quality, and never Hub-fetch
  * models to score them.
  *
- * APP-007: a retained CLI-007 adapter may be bound for inspect. That bind
- * does not claim quality — quality stays HOLD until a live parent/candidate
- * inference log exists.
+ * APP-007: a retained CLI-007 adapter may be bound for inspect. Identity
+ * inference (parent vs parent+adapter, boring ping prompt) may exist as a
+ * log; that is not a quality score. quality stays HOLD / claimed=false.
  */
 export function ComparePage() {
   useLayoutEffect(() => {

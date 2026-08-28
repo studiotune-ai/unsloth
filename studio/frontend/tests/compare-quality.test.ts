@@ -118,6 +118,28 @@ test("real local parent+candidate non-fixture log still HOLD on this hop", () =>
   assert.equal(result.reason, "no live parent/candidate inference yet");
 });
 
+test("identity parent+candidate log still HOLD, claimed false (identity != quality)", () => {
+  const result = evaluateCompareQuality({
+    parentPath:
+      "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+    candidatePath: "/tmp/studiotune-cli-007/adapter",
+    log: {
+      kind: "identity",
+      quality_claimed: false,
+      trained: false,
+      parent_text:
+        "\n\nI have a long story to tell you about my life.\n\nI have a",
+      candidate_text:
+        "\n\nI have a long story to tell you about my life.\n\nI have a",
+      prompt: "Reply with the single word ping.",
+    },
+  });
+  assert.equal(result.claimed, false);
+  assert.equal(result.status, "HOLD");
+  assert.equal(result.authority, false);
+  assert.equal(result.reason, "identity inference is not quality");
+});
+
 test("page source stays HOLD empty state and does not contain a quality score", async () => {
   const src = await readFile(pageUrl, "utf8");
   assert.ok(src.includes('data-studiotune-status="hold"'));

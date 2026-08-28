@@ -4,9 +4,10 @@
 /**
  * Compare quality freeze (APP-007 / AIN-938 leftover of AIN-952).
  *
- * Quality stays HOLD until a real local parent + candidate inference log
- * exists. This hop never scores. Fixtures are not quality. Hub / remote
- * paths are refused. Even a real local pair returns claimed=false.
+ * Quality stays HOLD. This hop never scores. Fixtures are not quality.
+ * Hub / remote paths are refused. Even a real local parent+candidate
+ * identity log (parent vs parent+adapter, boring ping prompt) returns
+ * claimed=false — identity inference is not a quality score.
  */
 
 export type CompareQualityStatus = "HOLD";
@@ -25,6 +26,11 @@ export type CompareLog = {
   label?: string;
   labeled?: string;
   type?: string;
+  quality_claimed?: boolean;
+  trained?: boolean;
+  parent_text?: string;
+  candidate_text?: string;
+  prompt?: string;
 };
 
 export type EvaluateCompareQualityInput = {
@@ -126,10 +132,29 @@ function isFixtureLog(log: CompareLog | string | null | undefined): boolean {
   );
 }
 
+/** Identity parent+candidate text is a bind/generate log, not a score. */
+function isIdentityLog(log: CompareLog | string | null | undefined): boolean {
+  if (log == null || typeof log === "string") {
+    return false;
+  }
+  if (typeof log.kind === "string" && /\bidentity\b/i.test(log.kind)) {
+    return true;
+  }
+  const hasPair =
+    typeof log.parent_text === "string" && typeof log.candidate_text === "string";
+  if (hasPair && log.quality_claimed === false) {
+    return true;
+  }
+  if (hasPair && log.trained === false) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * Freeze HOLD. Never invent a score. Never treat fixtures as quality.
- * A real local parent + candidate + non-fixture log still returns
- * claimed=false on this hop — there is no live inference yet.
+ * A real local parent + candidate + identity log still returns
+ * claimed=false — identity inference is not quality.
  */
 export function evaluateCompareQuality(
   input: EvaluateCompareQualityInput,
@@ -171,6 +196,15 @@ export function evaluateCompareQuality(
       claimed: false,
       status: "HOLD",
       reason: "fixture log cannot claim quality",
+      authority: false,
+    };
+  }
+
+  if (isIdentityLog(input.log)) {
+    return {
+      claimed: false,
+      status: "HOLD",
+      reason: "identity inference is not quality",
       authority: false,
     };
   }
