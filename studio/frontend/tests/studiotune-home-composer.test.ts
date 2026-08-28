@@ -31,6 +31,7 @@ import {
   planCardHasHubId,
 } from "../src/features/home/outcome-plan-builder.ts";
 import { applyPlanRecipe } from "../src/features/tune-agent/tune-agent-guards.ts";
+import { CLI007_RETAINED } from "../src/features/compare/retained-adapter-bind.ts";
 
 // Node's --test / --experimental-strip-types on this Node minor cannot load
 // `.tsx` at runtime, so the component's contract is read from source rather
@@ -298,4 +299,33 @@ test("HomeComposer default Accept path goes through applyPlanRecipe (never Engin
     !/from ["'].*engine["']/i.test(HOME_COMPOSER_SOURCE),
     "HomeComposer must not import from any 'engine' module",
   );
+});
+
+
+test("default composer facts seed the local snapshot parent, not a Hub id", () => {
+  assert.ok(HOME_COMPOSER_SOURCE.includes("CLI007_RETAINED.parentSnapshotDir"));
+  assert.ok(HOME_COMPOSER_SOURCE.includes("runtimeAdmitted: false"));
+  assert.ok(
+    !/parent:\s*null/.test(HOME_COMPOSER_SOURCE) ||
+      HOME_COMPOSER_SOURCE.includes("CLI007_RETAINED.parentSnapshotDir"),
+  );
+  const card = buildOutcomePlan("Fine-tune a local LoRA on a local dataset", {
+    parent: CLI007_RETAINED.parentSnapshotDir,
+    dataset: null,
+    runtimeAdmitted: false,
+  });
+  assert.equal(card.parent, CLI007_RETAINED.parentSnapshotDir);
+  assert.equal(card.authority, false);
+  assert.equal(card.action_taken, false);
+  assert.equal(planCardHasHubId(card), false);
+  assert.ok(
+    card.clarifications.some((c) => c === "dataset" || c.id === "dataset" || String(c).includes("dataset")),
+    "dataset clarification must still fire",
+  );
+});
+
+test("composer Accept path still goes through applyPlanRecipe, never Engine", () => {
+  assert.ok(HOME_COMPOSER_SOURCE.includes("applyPlanRecipe"));
+  assert.ok(!/mlx_lm\.lora/.test(HOME_COMPOSER_SOURCE));
+  assert.ok(!/\bfetch\s*\(/.test(HOME_COMPOSER_SOURCE));
 });

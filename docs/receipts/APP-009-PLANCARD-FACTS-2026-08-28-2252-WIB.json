@@ -1,0 +1,23 @@
+{
+  "issue": "APP-009",
+  "linear": "AIN-951",
+  "hop": "plancard-seed-local-parent",
+  "when": "2026-08-28 22:52 WIB",
+  "head_base": "691ee94ee",
+  "composer_seeded_parent": true,
+  "parent": "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+  "dataset_seeded": false,
+  "runtimeAdmitted": false,
+  "authority": false,
+  "action_taken": false,
+  "trains_on_send": false,
+  "hub_id": false,
+  "beta_ready_claim": false,
+  "merged": false,
+  "signed": false,
+  "notes": [
+    "HomeComposer DEFAULT_FACTS.parent is the APP-007 retained local snapshot.",
+    "Dataset and admit stay empty so clarifications still fire.",
+    "Accept still applyPlanRecipe only. No Engine. No rebuild this hop."
+  ]
+}

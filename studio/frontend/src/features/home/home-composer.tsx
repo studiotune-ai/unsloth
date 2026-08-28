@@ -17,6 +17,7 @@ import {
   planCardHasHubId,
 } from "./outcome-plan-builder";
 import { PlanCard } from "./plan-card";
+import { CLI007_RETAINED } from "@/features/compare";
 import { usePlanSessionStore } from "./plan-session-store";
 
 /**
@@ -37,11 +38,9 @@ import { usePlanSessionStore } from "./plan-session-store";
  *     disconnected desktop still lands here honestly.
  *
  *   * Facts (`parent` / `dataset` / `runtimeAdmitted`) are the tiny snapshot
- *     the local host already knows. In this hop they come from small local
- *     inputs on the composer (path fields + a runtime-admit toggle) so the
- *     UI is testable end-to-end without wiring in the whole desktop-app
- *     store. A follow-up hop connects them to the loaded-models /
- *     dataset-picker stores.
+ *     the local host already knows. Parent is seeded from the APP-007 retained local snapshot dir.
+ *     Dataset and runtimeAdmitted stay empty so those clarifications still
+ *     fire. Accept still never calls Engine.
  *
  *   * `planCardHasHubId` is asserted on every render so a regression that
  *     let a Hub id land on the card would fail loudly rather than quietly.
@@ -62,7 +61,7 @@ export type HomeComposerProps = {
 };
 
 const DEFAULT_FACTS: OutcomePlanFacts = {
-  parent: null,
+  parent: CLI007_RETAINED.parentSnapshotDir,
   dataset: null,
   runtimeAdmitted: false,
 };
