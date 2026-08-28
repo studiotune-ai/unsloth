@@ -144,3 +144,46 @@ test("post-auth lands on Home, not Chat", () => {
   assert.match(source, /return "\/home"/);
   assert.doesNotMatch(source, /return "\/chat"/);
 });
+
+test("Poppins and IBM Plex Mono are declared as local @font-face sources", () => {
+  assert.match(BRAND_CSS, /@font-face/);
+  assert.match(BRAND_CSS, /poppins-400-latin\.woff2/);
+  assert.match(BRAND_CSS, /poppins-500-latin\.woff2/);
+  assert.match(BRAND_CSS, /poppins-600-latin\.woff2/);
+  assert.match(BRAND_CSS, /ibm-plex-mono-400-latin\.woff2/);
+  assert.match(BRAND_CSS, /ibm-plex-mono-500-latin\.woff2/);
+  const fontsDir = new URL("../public/fonts/", import.meta.url);
+  for (const name of [
+    "poppins-400-latin.woff2",
+    "poppins-500-latin.woff2",
+    "poppins-600-latin.woff2",
+    "ibm-plex-mono-400-latin.woff2",
+    "ibm-plex-mono-500-latin.woff2",
+  ]) {
+    const bytes = readFileSync(new URL(name, fontsDir));
+    assert.ok(bytes.byteLength > 1000, `${name} must ship as a real woff2`);
+  }
+});
+
+test("every locale shell.brand / shell.product is StudioTune, beta is HOLD", () => {
+  const localesDir = new URL("../src/i18n/locales/", import.meta.url);
+  for (const name of [
+    "en.ts",
+    "ar.ts",
+    "de.ts",
+    "es.ts",
+    "fr.ts",
+    "hi.ts",
+    "it.ts",
+    "ja.ts",
+    "ko.ts",
+    "pt-br.ts",
+    "ru.ts",
+    "zh-CN.ts",
+  ]) {
+    const source = readFileSync(new URL(name, localesDir), "utf8");
+    assert.match(source, /brand:\s*"StudioTune"/, `${name} brand`);
+    assert.match(source, /product:\s*"StudioTune"/, `${name} product`);
+    assert.match(source, /beta:\s*"HOLD"/, `${name} beta`);
+  }
+});

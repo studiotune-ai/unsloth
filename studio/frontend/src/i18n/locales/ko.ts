@@ -52,9 +52,9 @@ export const ko = {
     shutdown: "종료",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "{name} 계정 메뉴",
     updateAvailable: "업데이트 사용 가능",
     resize: {

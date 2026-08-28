@@ -50,9 +50,9 @@ export const zhCN = {
     shutdown: "关闭服务",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "{name} 账号菜单",
     updateAvailable: "有可用更新",
     resize: {

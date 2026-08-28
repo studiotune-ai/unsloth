@@ -55,9 +55,9 @@ export const fr = {
     shutdown: "Arrêter",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "Menu du compte de {name}",
     updateAvailable: "Mise à jour disponible",
     resize: {

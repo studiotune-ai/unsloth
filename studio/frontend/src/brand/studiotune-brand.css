@@ -2,25 +2,49 @@
 /* Copyright 2026-present Ainfera Inc. See /studio/LICENSE.AGPL-3.0. */
 
 /*
- * StudioTune Desktop brand tokens.
+ * StudioTune Desktop brand tokens + locked webfonts.
  *
- * Least-destructive overlay: the Unsloth palette system (index.css) still
- * carries the day-to-day chrome, so switching StudioTune off is one import
- * away. What lives here is the fixed StudioTune contract:
- *
- *   1. The `--ai-*` StudioTune surfaces/text tokens, so Tune Agent chrome
- *      and any StudioTune-branded panel has one place to read from.
- *   2. The `--ship-fg / --hold-fg / --revise-fg / --reject-fg / --evidence-fg`
- *      decision-status pallette used across Accept / Grant / Train chips and
- *      the plan card.
- *   3. StudioTune font stacks (Poppins for UI, IBM Plex Mono for code,
- *      Iowan Old Style / Palatino for the display wordmark). Fallbacks are
- *      the previous Unsloth stack so an install without the StudioTune
- *      fonts does not go blank.
- *
- * These tokens are locked by tests (see tests/studiotune-brand-tokens.test.ts)
- * so a well-meaning refactor cannot quietly drift them.
+ * Fonts are copied from the Desktop token source (desktop-app/public/fonts)
+ * and declared here so the host no longer paints Hellix / Inter / Space
+ * Grotesk as the product face. Token values stay locked by
+ * tests/studiotune-brand-tokens.test.ts.
  */
+
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/poppins-400-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/poppins-500-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/poppins-600-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-500-latin.woff2") format("woff2");
+}
 
 :root {
   /* StudioTune host surface (dark by contract). */
@@ -46,7 +70,7 @@
 
   /* StudioTune font stacks. Kept in tokens so Tune Agent chrome and the
 	 * wordmark can read them without picking a font family inline. */
-  --studiotune-font-ui: "Poppins Variable", "Poppins", "Inter Variable",
+  --studiotune-font-ui: "Poppins", "Poppins Variable", "Inter Variable",
     ui-sans-serif, system-ui, sans-serif;
   --studiotune-font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace,
     SFMono-Regular, Menlo, monospace;

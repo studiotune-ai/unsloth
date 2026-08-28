@@ -52,9 +52,9 @@ export const ar = {
     shutdown: "إيقاف التشغيل",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "قائمة حساب {name}",
     updateAvailable: "يتوفر تحديث",
     resize: {

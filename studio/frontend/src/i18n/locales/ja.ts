@@ -54,9 +54,9 @@ export const ja = {
     shutdown: "シャットダウン",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "{name} のアカウントメニュー",
     updateAvailable: "アップデートが利用可能です",
     resize: {

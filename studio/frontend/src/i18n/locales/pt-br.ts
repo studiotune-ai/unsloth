@@ -54,9 +54,9 @@ export const ptBR = {
     shutdown: "Desligar",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "Menu da conta de {name}",
     updateAvailable: "Atualização disponível",
     resize: {

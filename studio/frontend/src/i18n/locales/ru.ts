@@ -54,9 +54,9 @@ export const ru = {
     shutdown: "Выключить",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "Меню аккаунта {name}",
     updateAvailable: "Доступно обновление",
     resize: {

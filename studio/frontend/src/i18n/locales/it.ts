@@ -19,9 +19,9 @@ export const it = {
     shutdown: "Arresta",
   },
   shell: {
-    beta: "BETA",
-    brand: "unsloth",
-    product: "Unsloth",
+    beta: "HOLD",
+    brand: "StudioTune",
+    product: "StudioTune",
     accountMenu: "Menu dell'account di {name}",
     updateAvailable: "Aggiornamento disponibile",
     resize: {

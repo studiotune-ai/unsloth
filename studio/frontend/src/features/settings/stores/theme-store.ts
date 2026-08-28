@@ -148,7 +148,7 @@ function getResolvedSnapshot(): ResolvedTheme {
 }
 
 function getResolvedServerSnapshot(): ResolvedTheme {
-  return "light";
+  return "dark";
 }
 
 /**
