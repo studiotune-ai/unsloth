@@ -1,0 +1,42 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "UNSIGNED-REBUILD-WINDOW-2026-08-28-2010-WIB",
+  "generatedAtWib": "2026-08-28 20:11:11 WIB",
+  "host": "HizrianacStudio.localdomain",
+  "machineId": "747eebd2-6870-42a2-82f0-cef8be641489",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "parentSha": "beefcffdfb91dc3de5275281630c2c9445c861d4",
+  "lock": "CoS 20:08 WIB: unsigned app rebuild so new look is in the running window. No new hop. No merge 11.",
+  "beta_ready_claim": false,
+  "signed": false,
+  "what_landed": {
+    "relaunched": true,
+    "pid": 5697,
+    "startedWib": "2026-08-28 20:10:05 WIB",
+    "binarySha256": "9ceddfb4891c637d16ba75864dae6169be387048f95225557685193b81281ded",
+    "binaryMtimeWib": "2026-08-28 20:06:47 WIB",
+    "binaryContains": {
+      "index-B6YfcVOg": true,
+      "StudioTune plan (show-only)": true,
+      "Poppins_plaintext": false,
+      "Hellix_path_strings": 12
+    },
+    "frontendDistCss": {
+      "file": "studio/frontend/dist/assets/index-B6YfcVOg.css",
+      "Poppins": 23,
+      "IBM Plex Mono": 6,
+      "accent": 13,
+      "bg": 3,
+      "unsloth_green": 0,
+      "Hellix": 0,
+      "Inter": 0
+    }
+  },
+  "unproven": [
+    "pixel shot of this relaunch (desktop capture blocked)",
+    "Developer ID / notarize / second Mac",
+    "plan card painted in the window"
+  ],
+  "cargo_build_release": "not re-run; 20:06 binary already in the app; no approval raise this hop",
+  "next_safe_action": "HOLD"
+}
