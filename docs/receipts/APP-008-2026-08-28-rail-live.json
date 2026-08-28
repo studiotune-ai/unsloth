@@ -1,0 +1,105 @@
+{
+  "ticket": "APP-008",
+  "title": "Tune Agent rail visible in running StudioTune.app window",
+  "verdict": "pass",
+  "beta_ready_claim": false,
+  "authority": false,
+  "action_taken": false,
+  "signed": false,
+  "notarized": false,
+  "published": false,
+  "deployed": false,
+  "hub_contacted": false,
+  "cloud_agent": false,
+  "merged": false,
+  "host": "HizrianacStudio.localdomain",
+  "generated_at": "2026-08-28T19:26:40+07:00",
+  "head": "74ddfb812bed25c98de38b22658cde9d0d48ea9b",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "window": {
+    "title": "StudioTune",
+    "owner": "StudioTune",
+    "pid": 63787,
+    "cg_window_id": 148509,
+    "bounds": {
+      "X": 320,
+      "Y": 142,
+      "Width": 1920,
+      "Height": 1187
+    },
+    "ax": {
+      "window_title": "StudioTune",
+      "note": "AX sees StudioTune chrome only. WKWebView does not expose Ask/Plan/Agent as AX names. Rail proof is the window screenshot."
+    }
+  },
+  "rail_markers_visible": [
+    "Tune Agent (rail header)",
+    "HOLD badge on rail",
+    "Ask tab (selected)",
+    "Plan tab",
+    "Agent tab",
+    "Tune Agent connected (green status)",
+    "empty-plan copy: No plan yet. Ask, or send a Plan/Agent request...",
+    "Accept / Grant / Train buttons present but disabled (no plan)"
+  ],
+  "plan_card": {
+    "filled_plan_card_visible": false,
+    "empty_state_visible": true,
+    "note": "No plan has been produced. Rail is live; a filled PlanCard is not on screen."
+  },
+  "screenshot": {
+    "path": "/tmp/studiotune-rail-live-2026-08-28.png",
+    "tree_copy": "docs/receipts/studiotune-rail-live-2026-08-28.png",
+    "kind": "screencapture -x -o -l148509 (StudioTune.app window only)",
+    "captured_at": "2026-08-28T19:22:00+07:00"
+  },
+  "app": {
+    "path": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app",
+    "bundle_dir_mtime": "2026-08-28 13:13:03 +07",
+    "binary_mtime": "2026-08-28 19:18:38 +07",
+    "binary": "Contents/MacOS/unsloth-studio",
+    "codesign": "adhoc,linker-signed",
+    "cdhash_sha256": "a83ee2c9419909f23d70e2d9115b92c0058d3b2b",
+    "team_identifier": null,
+    "developer_id": false
+  },
+  "rebuild": {
+    "rebuilt": true,
+    "method": "cargo build --release using existing frontend/dist (2026-08-28 18:08, contains Tune Agent rail). tauri CLI `tauri build --bundles app` was Auto-review blocked (executable content could not be bound). Copied the new release binary into the existing unsigned .app. No cargo clean, no git reset/stash, no Developer ID.",
+    "tauri_cli_bundles_app": "blocked_by_auto_review",
+    "frontend_rebuild": false,
+    "frontend_dist_mtime": "2026-08-28 18:08 +07",
+    "cargo": "/Users/hizrianraz/.cargo/bin/cargo 1.97.1",
+    "signing": "adhoc/linker-signed only"
+  },
+  "sidecar": {
+    "path": "/Users/hizrianraz/.studiotune/tune-agent",
+    "sha256": "d1d39ba438e8555d09999f888ef4962f3951e28ed3d700ce9dca259e0a7796bd"
+  },
+  "proven": [
+    "StudioTune.app process 63787 running from the rebuilt unsigned bundle",
+    "CG window title=StudioTune id=148509 1920x1187",
+    "window screenshot shows Tune Agent rail with Ask/Plan/Agent; Ask selected; Tune Agent connected; HOLD badge",
+    "packaged sidecar sha256 still d1d39ba438e8555d09999f888ef4962f3951e28ed3d700ce9dca259e0a7796bd"
+  ],
+  "still_unproven": [
+    "filled PlanCard (no plan produced this hop)",
+    "Accept / Grant / Train (buttons disabled, not clicked)",
+    "signed / notarized / published app",
+    "Developer ID",
+    "second Mac",
+    "Hub fetch (not attempted)",
+    "beta launch"
+  ],
+  "hold_reason": "Rail is live in an unsigned local .app on one Mac. Not signed, not notarized, not published. Filled PlanCard and Engine actions were not exercised. beta_ready_claim remains false.",
+  "hard_locks_respected": [
+    "no Cloud Agent",
+    "no worker restart",
+    "no merge",
+    "no sign/notarize/publish",
+    "no Hub fetch",
+    "did not touch desktop-app #11",
+    "stopped if hostname were Mac.localdomain"
+  ]
+}
