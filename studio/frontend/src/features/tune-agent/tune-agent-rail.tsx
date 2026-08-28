@@ -3,6 +3,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  adaptBridgePlanToCard,
+  type OutcomePlanCard,
+  PlanCard,
+  planCardHasHubId,
+} from "@/features/home";
+import {
   applyPlanRecipe,
   canStartTrainFromMode,
   requireAdmittedRuntime,
@@ -276,7 +282,12 @@ function TuneAgentRailContent({
         </div>
       </form>
 
-      <PlanCard plan={state.plan} connected={state.connected} />
+      <RailPlanSurface
+        plan={state.plan}
+        connected={state.connected}
+        runtimeAdmitted={state.runtimeAdmitted}
+        onAcceptStep={handleAccept}
+      />
 
       {state.mode === "agent" && (
         <div
@@ -460,12 +471,28 @@ function ConnectionBadge({ connected }: { connected: boolean }) {
   );
 }
 
-function PlanCard({
+/**
+ * Rail plan surface. Renders the shared home `<PlanCard>` when Tune Agent
+ * has produced a plan, so Ask / Plan / Agent modes and the Clusy-style
+ * home composer share one visual card. Falls back to an honest HOLD panel
+ * when there is no plan yet — the rail never fakes a live plan.
+ *
+ * The bridge plan is adapted to the same `OutcomePlanCard` shape the home
+ * composer emits via `adaptBridgePlanToCard`. A regression that surfaced
+ * a Hub id anywhere on the card is caught by `planCardHasHubId` here (the
+ * same guard the home composer runs) and downgrades the surface to HOLD
+ * with a named reason instead of drawing.
+ */
+function RailPlanSurface({
   plan,
   connected,
+  runtimeAdmitted,
+  onAcceptStep,
 }: {
   plan: OutcomePlan | null;
   connected: boolean;
+  runtimeAdmitted: boolean;
+  onAcceptStep: () => void;
 }) {
   if (plan === null) {
     return (
@@ -480,29 +507,41 @@ function PlanCard({
       </section>
     );
   }
+  let card: OutcomePlanCard;
+  try {
+    card = adaptBridgePlanToCard(plan, runtimeAdmitted);
+  } catch {
+    return (
+      <section
+        className="mt-3 rounded-md border border-white/10 p-3 text-xs"
+        data-testid="tune-agent-plan-card-refused"
+        style={{ background: "var(--ai-panel)", color: "var(--ai-muted)" }}
+      >
+        Plan adapter refused this bridge payload. Rail stays in HOLD instead of drawing a partial card.
+      </section>
+    );
+  }
+  if (planCardHasHubId(card)) {
+    return (
+      <section
+        className="mt-3 rounded-md border border-white/10 p-3 text-xs"
+        data-testid="tune-agent-plan-card-refused"
+        style={{ background: "var(--ai-panel)", color: "var(--ai-muted)" }}
+      >
+        Refused: bridge plan would have surfaced a Hub id. StudioTune never
+        sources runtimes or datasets from the Hub.
+      </section>
+    );
+  }
   return (
-    <section
-      className="mt-3 rounded-md border border-white/10 p-3 text-xs"
-      style={{ background: "var(--ai-surface)", color: "var(--ai-text)" }}
-      data-testid="tune-agent-plan-card"
-    >
-      <p className="text-sm font-semibold">{plan.summary}</p>
-      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
-        <PlanField label="Method" value={plan.method} />
-        <PlanField label="Runtime" value={plan.runtime} />
-        <PlanField label="Dataset" value={plan.dataset} />
-        <PlanField label="Cost" value={plan.cost} />
-      </dl>
-    </section>
-  );
-}
-
-function PlanField({ label, value }: { label: string; value: string }) {
-  return (
-    <>
-      <dt style={{ color: "var(--ai-faint)" }}>{label}</dt>
-      <dd style={{ color: "var(--ai-text)" }}>{value}</dd>
-    </>
+    <div className="mt-3" data-testid="tune-agent-plan-card">
+      <PlanCard
+        card={card}
+        handlers={{
+          onAccept: () => onAcceptStep(),
+        }}
+      />
+    </div>
   );
 }
 

@@ -425,3 +425,70 @@ export const OUTCOME_PLAN_CLARIFICATION_LABELS: Record<
   "missing-admit":
     "Admit a local runtime on this Mac. Agent Train stays refused until admit passes.",
 };
+
+/**
+ * Bridge-plan shape the Tune Agent rail hands us over IPC. Mirrors the shape
+ * of `OutcomePlan` in `../tune-agent/tune-agent-types.ts` so this module does
+ * not depend on that file (avoids a home → tune-agent cycle) while still
+ * accepting exactly what Tune Agent sends. Extra fields on the bridge plan
+ * are ignored; missing string fields collapse to `UNKNOWN` through the same
+ * `sanitizeAgainstHubId` guard the pure builder uses.
+ */
+export type BridgePlanLike = {
+  id?: string;
+  summary?: string;
+  method?: string;
+  runtime?: string;
+  dataset?: string;
+  cost?: string;
+  recipe?: Record<string, unknown>;
+};
+
+/**
+ * Adapt a Tune Agent bridge plan into the shared `OutcomePlanCard` so the
+ * rail and the Home composer can render the same visual `<PlanCard>`
+ * without diverging.
+ *
+ * The adapter is pure — it never touches Engine, the Hub, or the network,
+ * and reuses `buildOutcomePlan` for the step list + clarifications so the
+ * rail cannot drift from the composer's contract. Header fields
+ * (`method` / `runtime` / `cost` / `summary`) come from the bridge when
+ * present, but every string still runs through `sanitizeAgainstHubId` so a
+ * malformed bridge reply cannot leak a Hub id onto the card.
+ */
+export function adaptBridgePlanToCard(
+  plan: BridgePlanLike,
+  runtimeAdmitted: boolean,
+): OutcomePlanCard {
+  const summary =
+    typeof plan.summary === "string" && plan.summary.trim().length > 0
+      ? plan.summary
+      : "";
+  const datasetInput = typeof plan.dataset === "string" ? plan.dataset : null;
+  const base = buildOutcomePlan(summary, {
+    parent: null,
+    dataset: datasetInput,
+    runtimeAdmitted,
+  });
+  const method =
+    typeof plan.method === "string" && plan.method.trim().length > 0
+      ? sanitizeAgainstHubId(plan.method)
+      : base.method;
+  const runtime =
+    typeof plan.runtime === "string" && plan.runtime.trim().length > 0
+      ? sanitizeAgainstHubId(plan.runtime)
+      : base.runtime;
+  const cost =
+    typeof plan.cost === "string" && plan.cost.trim().length > 0
+      ? sanitizeAgainstHubId(plan.cost)
+      : base.cost;
+  const bridgeSummary =
+    summary.length > 0 ? summary : base.summary;
+  return {
+    ...base,
+    method,
+    runtime,
+    cost,
+    summary: bridgeSummary,
+  };
+}
