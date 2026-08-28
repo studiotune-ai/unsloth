@@ -1,0 +1,72 @@
+{
+  "id": "APP-010-DATASET-PERSIST-UNSIGNED-REBUILD-2026-08-29-WIB",
+  "hop": "APP-010",
+  "title": "Unsigned rebuild \u2014 APP-010 localStorage dataset bind in running window",
+  "timestamp_wib": "2026-08-29 00:27 WIB",
+  "repo": "studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": 1,
+  "head": "0db24385802d3156a8611197a71c48d0f766885d",
+  "head_short": "0db243858",
+  "source_receipt": "docs/receipts/APP-010-DATASET-PERSIST-2026-08-29-WIB.json",
+  "source_commits": [
+    "0b59c382f7c1397f2c1fa764b21343b3fd007a28",
+    "0db24385802d3156a8611197a71c48d0f766885d"
+  ],
+  "persist_surface": "localStorage",
+  "persist_key": "studiotune.home.dataset-bind.v1",
+  "dexie_recipes_untouched": true,
+  "old_pid": 42075,
+  "new_pid": 55951,
+  "ppid": 55939,
+  "keepalive": "sleep 7200 (shell 55939)",
+  "host_sha256": "4ae23b512e5d55a8e5fe3189b300c92db7b0c1dd1a9456fbb4ee8310cee930f1",
+  "sidecar_sha256": "25b9f4e6355bfa7be6e2863621e0e2df830e96d184a5e2d8d1ede9827fe2c491",
+  "sidecar_unchanged": true,
+  "dist": "index-8D6pDg1G.js",
+  "dist_bind_strings": {
+    "studiotune.home.dataset-bind.v1": true,
+    "hardcoded_runtimeAdmitted_true": false
+  },
+  "runtimeAdmitted_source": "isRuntimeAdmitted(receipt)",
+  "trained": false,
+  "codesign": {
+    "signature": "adhoc",
+    "team_identifier": "",
+    "developer_id": false,
+    "flags": "adhoc,linker-signed"
+  },
+  "signed": false,
+  "launch": "direct-exec",
+  "launch_detail": {
+    "mode": "direct-exec",
+    "pid": 55951,
+    "ppid": 55939,
+    "alive": true,
+    "open_app": false
+  },
+  "frontend_build": "pass",
+  "cargo_build": "pass",
+  "cargo_offline": true,
+  "binary_size": 61113632,
+  "binary_mtime_wib": "2026-08-29 00:26:24 WIB",
+  "pixel_proven": false,
+  "pixel": "UNPROVEN",
+  "beta_ready_claim": false,
+  "train_this_hop": false,
+  "hub_contacted": false,
+  "sign_this_hop": false,
+  "notarize_this_hop": false,
+  "publish_this_hop": false,
+  "merge_desktop_app_11": false,
+  "authority": false,
+  "action_taken": false,
+  "status": "HOLD",
+  "verdict": "hold",
+  "notes": [
+    "Source APP-010 persist is 0b59c382f + tsc narrow 0db243858; running binary was APP-009 rail IPC admit (pid 42075, host sha256 b2826918) behind it.",
+    "Vite rebuild produced index-8D6pDg1G.js embedding studiotune.home.dataset-bind.v1. cargo build --release --offline finished in 34.02s.",
+    "adhoc binary swap of unsloth-studio only; tune-agent left untouched sha256 25b9f4e6.",
+    "direct-exec relaunch pid 55951 ppid 55939 keepalive sleep 7200. Pixel UNPROVEN. No merge #11. No train. No sign. No notarize."
+  ]
+}
