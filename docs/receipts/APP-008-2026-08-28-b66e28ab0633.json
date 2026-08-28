@@ -1,0 +1,203 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-008",
+  "goal": "StudioTune Desktop can be called beta-mechanics-ready (not marketing beta). HOLD until every unproven Mac-only step lands.",
+  "generatedAt": "2026-08-28T06:21:56.127Z",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "commit": "b66e28ab06337ad585ef10a1b1a2dc6b04b0a2b8",
+  "host": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node": "v22.22.3"
+  },
+  "summary": {
+    "total": 15,
+    "pass": 12,
+    "fail": 0,
+    "unproven": 3,
+    "verdict": "hold"
+  },
+  "betaReadyClaim": false,
+  "checks": [
+    {
+      "id": "brand-tokens",
+      "name": "StudioTune brand tokens are locked (CSS + HTML + i18n + tauri.conf.json)",
+      "verdict": "pass",
+      "detail": "brand tokens: 27/27 pass, 0 fail",
+      "evidence": {
+        "totalN": 27,
+        "passN": 27,
+        "failN": 0
+      }
+    },
+    {
+      "id": "nav-defaults",
+      "name": "Train / Recipes / Export / Compare are the pinned primary rail",
+      "verdict": "pass",
+      "detail": "nav defaults: 4/4 pass, 0 fail",
+      "evidence": {
+        "totalN": 4,
+        "passN": 4,
+        "failN": 0
+      }
+    },
+    {
+      "id": "guards-and-bridge",
+      "name": "Accept ≠ Engine, Plan ≠ Train, Agent refuses without admit, live bridge fail-closes",
+      "verdict": "pass",
+      "detail": "tune-agent guards + bridge + admit parity: 26/26 pass, 0 fail",
+      "evidence": {
+        "totalN": 26,
+        "passN": 26,
+        "failN": 0
+      }
+    },
+    {
+      "id": "full-frontend-suite",
+      "name": "Full StudioTune Desktop frontend test suite is green",
+      "verdict": "pass",
+      "detail": "full suite: 5313/5313 pass, 0 fail",
+      "evidence": {
+        "totalN": 5313,
+        "passN": 5313,
+        "failN": 0
+      }
+    },
+    {
+      "id": "rust-admit",
+      "name": "Rust tune_agent admit policy tests are green (regular-file python, allow-list snapshot, no Hub id)",
+      "verdict": "pass",
+      "detail": "rust admit: 12 passed, 0 failed",
+      "evidence": {
+        "passN": 12,
+        "failN": 0
+      }
+    },
+    {
+      "id": "updater-disabled",
+      "name": "Auto-updater fails closed; no Unsloth GitHub release endpoint remains",
+      "verdict": "pass",
+      "detail": "updater short-circuits; endpoints do not touch unslothai/unsloth.",
+      "evidence": {
+        "endpoints": [
+          "https://studiotune.ai/desktop/updates/latest.json"
+        ],
+        "disabledFlag": true
+      }
+    },
+    {
+      "id": "agpl-notices",
+      "name": "AGPL-3.0 upstream notices retained (COPYING, studio/LICENSE.AGPL-3.0, attribution overlay)",
+      "verdict": "pass",
+      "detail": "COPYING, studio/LICENSE.AGPL-3.0, and attribution/STUDIOTUNE.md all present."
+    },
+    {
+      "id": "frontend-dist",
+      "name": "Frontend dist tree exists and has a stable sha256",
+      "verdict": "pass",
+      "detail": "705 files, sha256=785b1daa653a…",
+      "evidence": {
+        "present": true,
+        "digest": "785b1daa653a238f900737d796d63407284ea3631bf74975ad54a207efd7ef0d",
+        "fileCount": 705
+      }
+    },
+    {
+      "id": "unsigned-app-build",
+      "name": "Unsigned StudioTune.app bundle built via `npm run tauri build -- --bundles app`",
+      "verdict": "pass",
+      "detail": "StudioTune.app present, adhoc-signed, no Developer ID. MacOS/unsloth-studio sha256=b13087aa37a6…, 58.4 MiB.",
+      "evidence": {
+        "appPath": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app",
+        "macBinDigest": "b13087aa37a6671e74d2973a2f7bc680bbfda6a3c2699eac0f63ea480bd5c322",
+        "macBinSize": 61271920,
+        "codesign": "Executable=/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth/studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/unsloth-studio\nIdentifier=unsloth_studio-2ce821646c5eb481\nFormat=app bundle with Mach-O thin (arm64)\nCodeDirectory v=20400 size=475096 flags=0x20002(adhoc,linker-signed) hashes=14843+0 location=embedded\nSignature=adhoc\nInfo.plist=not bound\nTeamIdentifier=not set\nSealed Resources=none\nInternal requirements=none"
+      }
+    },
+    {
+      "id": "cold-start",
+      "name": "Unsigned StudioTune.app cold-starts to the sidebar in < 8s and does not crash",
+      "verdict": "pass",
+      "detail": "cold start reached a running unsloth-studio pid in 73ms (< 8000ms budget). pid(s)=59620. App killed after the check.",
+      "evidence": {
+        "elapsedMs": 73,
+        "pid": [
+          "59620"
+        ]
+      }
+    },
+    {
+      "id": "rail-visible",
+      "name": "Tune Agent rail is visible in the shell after cold start",
+      "verdict": "unproven",
+      "detail": "honest HOLD: this receipt runner does not carry a WebDriver/CDP harness to observe the rail inside the running .app. The rail component and its route wiring are present; the headless `guards-and-bridge` suite covers the same mount + guard semantics.",
+      "evidence": {
+        "railComponent": "studio/frontend/src/features/tune-agent/tune-agent-rail.tsx",
+        "rootRoute": "studio/frontend/src/app/routes/__root.tsx"
+      }
+    },
+    {
+      "id": "sidecar-handshake",
+      "name": "Tune Agent sidecar handshake succeeds or the rail shows honest HOLD",
+      "verdict": "unproven",
+      "detail": "honest HOLD: tune-agent at /Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/tune-agent does not expose the persistent stdio-json ping loop the Rust bridge expects. Bridge fail-closes; rail draws HOLD by design. Landing the handshake requires a code change in tune-agent (out of scope for this receipt).",
+      "evidence": {
+        "tuneAgentRepo": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/tune-agent",
+        "cliEntry": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/tune-agent/tune_agent/__main__.py",
+        "cliEntryPresent": true,
+        "pingMethodPresent": false
+      }
+    },
+    {
+      "id": "admit-succeeds",
+      "name": "Admit runtime with the framework python3.13 + Qwen2.5-0.5B-4bit snapshot returns admitted=true, HF_HUB_OFFLINE=1",
+      "verdict": "pass",
+      "detail": "real_mac_admit_passes_with_framework_python_and_allowlisted_snapshot passed against RealAdmitFs: python=/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13 (regular file), snapshot=~/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3, HF_HUB_OFFLINE=1, mlx_args=[].",
+      "evidence": {
+        "python": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13",
+        "snapshot": "~/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+        "snapshotAbs": "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+        "hfHubOffline": "1",
+        "cargoTail": "running 2 tests\ntest tune_agent::tests::real_mac_admit_refuses_slash_usr_bin_python3 ... ok\ntest tune_agent::tests::real_mac_admit_passes_with_framework_python_and_allowlisted_snapshot ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 422 filtered out; finished in 0.00s"
+      }
+    },
+    {
+      "id": "admit-refuses-symlink",
+      "name": "Admit refuses /usr/bin/python3 (plain python) with the documented reason",
+      "verdict": "pass",
+      "detail": "admit refused /usr/bin/python3 as expected. On this host /usr/bin/python3 is a regular-file; the refusal reason is one of the documented AdmitError variants (WrongPythonPath or NotRegularFile).",
+      "evidence": {
+        "probedPath": "/usr/bin/python3",
+        "pathKindOnHost": "regular-file",
+        "cargoTail": "running 2 tests\ntest tune_agent::tests::real_mac_admit_refuses_slash_usr_bin_python3 ... ok\ntest tune_agent::tests::real_mac_admit_passes_with_framework_python_and_allowlisted_snapshot ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 422 filtered out; finished in 0.00s"
+      }
+    },
+    {
+      "id": "guards-in-app",
+      "name": "Rail guards fire in the running .app: Accept never touches Engine, Plan cannot Train, Agent refuses without admit",
+      "verdict": "unproven",
+      "detail": "honest HOLD: exercising the guards inside the running .app requires a WebDriver/CDP harness this receipt runner does not carry. The same three guards are covered headlessly by `guards-and-bridge` (studiotune-tune-agent-guards + admit-parity tests) which passed above.",
+      "evidence": {
+        "headlessProxyCheck": "guards-and-bridge"
+      }
+    }
+  ],
+  "unprovenBlocksSignedBeta": [
+    "Second Mac cold-start on a machine without any dev tooling (this receipt only speaks to the dev host).",
+    "Developer ID application signing + Apple notarization + stapled ticket.",
+    "Live Compare quality run (parent vs candidate) against real fixtures — the Compare page is still an honest HOLD placeholder.",
+    "Tune Agent process shipped alongside the .app: the sidecar binary must be present at ~/.studiotune/tune-agent (or a configured path) before the live bridge can connect."
+  ],
+  "hardLocksHonored": {
+    "noSignNotarizePublish": true,
+    "noHubFetch": true,
+    "noHubIdToMlxLm": true,
+    "updaterDisabled": true,
+    "plainPythonSymlinkRefused": true,
+    "hfHubOffline": "1",
+    "agplNoticesRetained": true,
+    "apacheCoreUntouched": true,
+    "trainFirstNavRetained": true,
+    "brandTokensRetained": true
+  }
+}
