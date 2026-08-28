@@ -18,6 +18,10 @@ import {
 } from "./outcome-plan-builder";
 import { PlanCard } from "./plan-card";
 import { CLI007_RETAINED } from "@/features/compare";
+import {
+  getAcceptedLocalDatasetPath,
+  subscribeAcceptedLocalDataset,
+} from "@/features/data-recipes";
 import { usePlanSessionStore } from "./plan-session-store";
 
 /**
@@ -60,11 +64,13 @@ export type HomeComposerProps = {
   onAcceptStep?: (step: OutcomePlanStep, card: OutcomePlanCard) => void;
 };
 
-const DEFAULT_FACTS: OutcomePlanFacts = {
-  parent: CLI007_RETAINED.parentSnapshotDir,
-  dataset: null,
-  runtimeAdmitted: false,
-};
+function factsFromBinds(): OutcomePlanFacts {
+  return {
+    parent: CLI007_RETAINED.parentSnapshotDir,
+    dataset: getAcceptedLocalDatasetPath(),
+    runtimeAdmitted: false,
+  };
+}
 
 export function HomeComposer({
   initialFacts,
@@ -73,8 +79,18 @@ export function HomeComposer({
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [facts, setFacts] = useState<OutcomePlanFacts>(
-    initialFacts ?? DEFAULT_FACTS,
+    initialFacts ?? factsFromBinds(),
   );
+
+  useEffect(() => {
+    return subscribeAcceptedLocalDataset(() => {
+      setFacts((prev) => ({
+        ...prev,
+        dataset: getAcceptedLocalDatasetPath(),
+        runtimeAdmitted: false,
+      }));
+    });
+  }, []);
   const [card, setCard] = useState<OutcomePlanCard | null>(null);
   const [lastReason, setLastReason] = useState<string | null>(null);
 

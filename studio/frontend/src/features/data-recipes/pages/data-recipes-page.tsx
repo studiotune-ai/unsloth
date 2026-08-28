@@ -59,6 +59,10 @@ import {
   type LocalFileRef,
   type LocalFilesProposal,
 } from "../data/local-files-proposal";
+import {
+  bindAcceptedLocalFilesToHome,
+  clearAcceptedLocalFilesFromHome,
+} from "../data/local-files-home-bind";
 import { LEARNING_RECIPES } from "../learning-recipes";
 
 type TemplateCard = {
@@ -471,11 +475,14 @@ export function DataRecipesPage(): ReactElement {
     if (localFilesProposal === null) {
       return;
     }
-    setLocalFilesProposal(acceptLocalFilesProposal(localFilesProposal));
+    const next = acceptLocalFilesProposal(localFilesProposal);
+    setLocalFilesProposal(next);
+    bindAcceptedLocalFilesToHome(next);
   }
 
   function rejectLocalFiles(): void {
     setLocalFilesProposal(rejectLocalFilesProposal(localFilesProposal));
+    clearAcceptedLocalFilesFromHome();
   }
 
   const isBusy =

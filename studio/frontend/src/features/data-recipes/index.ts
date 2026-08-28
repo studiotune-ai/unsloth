@@ -20,3 +20,11 @@ export type {
   LocalFilesProposalStatus,
   ProposeLocalFilesInput,
 } from "./data/local-files-proposal";
+export {
+  bindAcceptedLocalFilesToHome,
+  clearAcceptedLocalFilesFromHome,
+  getAcceptedLocalDatasetBind,
+  getAcceptedLocalDatasetPath,
+  subscribeAcceptedLocalDataset,
+} from "./data/local-files-home-bind";
+export type { AcceptedLocalDatasetBind } from "./data/local-files-home-bind";
