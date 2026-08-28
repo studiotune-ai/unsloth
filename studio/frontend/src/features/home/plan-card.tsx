@@ -25,11 +25,21 @@ import { OUTCOME_PLAN_CLARIFICATION_LABELS } from "./outcome-plan-builder";
  *     optional steps (compare / export in this hop) may be Skipped —
  *     mandatory local-loop steps stay locked until their clarification is
  *     resolved.
+ *   * `onReject(step)` clears any accepted proposal binding on that step.
+ *     It never touches persisted state, never calls Engine, and is opt-in:
+ *     if the composer doesn't pass an `onReject` handler, the Reject
+ *     button is hidden. AIN-952 / APP-010.
  */
 export type PlanCardHandlers = {
   onAccept?: (step: OutcomePlanStep) => void;
   onEdit?: (step: OutcomePlanStep) => void;
   onSkip?: (step: OutcomePlanStep) => void;
+  /**
+   * Clear this step's accepted proposal binding. Only rendered when the
+   * caller wires a handler; the built-in Discard path handles whole-plan
+   * rejection, so the step-level Reject stays optional.
+   */
+  onReject?: (step: OutcomePlanStep) => void;
   onResolveClarification?: (id: OutcomePlanClarificationId) => void;
   /** Discard the whole plan. Never calls Engine. */
   onDiscard?: () => void;
@@ -314,6 +324,16 @@ function PlanCardStepRow({
               : "Skip this step for the current plan revision."
           }
         />
+        {handlers?.onReject ? (
+          <StepButton
+            label="Reject"
+            disabled={false}
+            onClick={() => handlers.onReject?.(step)}
+            testid={`home-plan-step-${step.id}-reject`}
+            statusColor="var(--reject-fg)"
+            hint="Reject this step's proposal. Nothing persists, nothing trains."
+          />
+        ) : null}
       </div>
     </li>
   );
