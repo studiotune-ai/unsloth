@@ -268,6 +268,16 @@ test("propose surface stays on the /data-recipes route (no second recipe UI)", a
     routerSrc.includes("Data Recipes"),
     "existing /data-recipes page title must remain",
   );
+  assert.ok(
+    routerSrc.includes("proposeLocalFiles") &&
+      routerSrc.includes("acceptLocalFilesProposal") &&
+      routerSrc.includes("rejectLocalFilesProposal"),
+    "live /data-recipes page must import propose/accept/reject (no second UI)",
+  );
+  assert.ok(
+    routerSrc.includes("From local files"),
+    "From local files must land on the existing New Recipe menu",
+  );
 });
 
 test("hash is stable across permutations and canonicalizes the file list", async () => {

@@ -1,0 +1,29 @@
+{
+  "issue": "APP-010",
+  "linear": "AIN-952",
+  "hop": "ui-wire-local-files-proposal",
+  "when": "2026-08-28 21:56 WIB",
+  "repo": "studiotune-ai/unsloth",
+  "pr": 1,
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "base_head": "133af7553",
+  "surface": "studio/frontend/src/features/data-recipes/pages/data-recipes-page.tsx",
+  "module": "studio/frontend/src/features/data-recipes/data/local-files-proposal.ts",
+  "second_recipe_ui_invented": false,
+  "dexie_list_kept": true,
+  "accept_writes_dexie": false,
+  "accept_calls_engine": false,
+  "accept_trains": false,
+  "hub_fetch": false,
+  "compare_quality_claimed": false,
+  "beta_ready_claim": false,
+  "merged": false,
+  "signed": false,
+  "notarized": false,
+  "notes": [
+    "New Recipe menu gained From local files; hidden file input maps File to {path, bytes, sha256} and calls proposeLocalFiles.",
+    "Proposal card renders on the same /data-recipes page. Accept calls acceptLocalFilesProposal only. Reject clears in-memory state.",
+    "Live /data-recipes Dexie list and learning recipes stay. Compare quality stays HOLD until a real parent/candidate run.",
+    "Unsigned running .app is not rebuilt on this hop. Source + tests only."
+  ]
+}
