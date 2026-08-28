@@ -281,3 +281,32 @@ test("disconnected bridge exposes admitRuntime as a null-returning refusal", asy
     "disconnected admitRuntime must return null so the rail draws HOLD instead of a fake admit",
   );
 });
+
+test("live bridge requestPlan invokes tune_agent_request_plan only", async () => {
+  const seen: string[] = [];
+  const plan = {
+    id: "st-plan-1",
+    summary: "request-verified-dataset-facts",
+    method: "UNKNOWN",
+    runtime: "UNKNOWN",
+    dataset: "UNKNOWN",
+    cost: "local-only",
+    recipe: { authority: false, action_taken: false },
+  };
+  const invoke = async (cmd: string) => {
+    seen.push(cmd);
+    if (cmd === "tune_agent_request_plan") return plan;
+    throw new Error(`unexpected invoke: ${cmd}`);
+  };
+  const bridge = makeLiveTuneAgentBridge(invoke as never, {
+    connected: true,
+    binary: "/path",
+    admit: null,
+    lastError: null,
+  });
+  const got = await bridge.requestPlan("Fine-tune a local LoRA");
+  assert.deepEqual(got, plan);
+  assert.deepEqual(seen, ["tune_agent_request_plan"]);
+  assert.equal(bridge.getState().connected, true);
+});
+

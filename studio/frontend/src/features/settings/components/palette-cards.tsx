@@ -26,14 +26,14 @@ const PREVIEWS: Record<Palette, Record<ResolvedTheme, PreviewColors>> = {
     light: {
       bg: "#fefefd",
       sidebar: "#f1f1ef",
-      accent: "#17b88b",
+      accent: "#a9c7ff",
       text: "#444444",
       border: "#e4e4e0",
     },
     dark: {
       bg: "#181818",
       sidebar: "#262626",
-      accent: "#17b88b",
+      accent: "#a9c7ff",
       text: "#b5b5b5",
       border: "#303030",
     },

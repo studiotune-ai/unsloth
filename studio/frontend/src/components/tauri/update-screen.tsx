@@ -33,9 +33,9 @@ function Logo() {
       />
       <span
         className="text-ui-50 font-semibold leading-none tracking-[-0.02em] text-foreground"
-        style={{ fontFamily: '"Hellix", sans-serif' }}
+        style={{ fontFamily: '"Poppins", "Poppins Variable", sans-serif' }}
       >
-        unsloth
+        StudioTune
       </span>
     </div>
   );

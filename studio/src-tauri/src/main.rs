@@ -1914,6 +1914,7 @@ fn main() {
             tune_agent::tune_agent_status,
             tune_agent::tune_agent_start,
             tune_agent::tune_agent_admit_runtime,
+            tune_agent::tune_agent_request_plan,
             diagnostics::collect_support_diagnostics,
             native_clipboard::read_native_clipboard_files,
             native_clipboard::read_native_clipboard_png,

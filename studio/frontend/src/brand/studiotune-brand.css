@@ -70,7 +70,7 @@
 
   /* StudioTune font stacks. Kept in tokens so Tune Agent chrome and the
 	 * wordmark can read them without picking a font family inline. */
-  --studiotune-font-ui: "Poppins", "Poppins Variable", "Inter Variable",
+  --studiotune-font-ui: "Poppins", "Poppins Variable",
     ui-sans-serif, system-ui, sans-serif;
   --studiotune-font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace,
     SFMono-Regular, Menlo, monospace;

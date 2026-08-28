@@ -187,3 +187,70 @@ test("every locale shell.brand / shell.product is StudioTune, beta is HOLD", () 
     assert.match(source, /beta:\s*"HOLD"/, `${name} beta`);
   }
 });
+
+test("Hellix, Inter Variable, and Space Grotesk are not the live UI face", () => {
+  const css = readFileSync(new URL("../src/index.css", import.meta.url), "utf8");
+  assert.doesNotMatch(css, /@fontsource-variable\/inter/);
+  assert.doesNotMatch(css, /@fontsource-variable\/space-grotesk/);
+  assert.doesNotMatch(css, /font-family:\s*"Hellix"/);
+  assert.doesNotMatch(css, /--font-sans:\s*"Inter Variable"/);
+  assert.doesNotMatch(css, /--font-heading:\s*"Hellix"/);
+  assert.doesNotMatch(css, /#17b88b/);
+  const brandCss = readFileSync(
+    new URL("../src/brand/studiotune-brand.css", import.meta.url),
+    "utf8",
+  );
+  assert.doesNotMatch(brandCss, /Inter Variable/);
+  assert.match(brandCss, /--studiotune-font-ui:[\s\S]*Poppins/);
+});
+
+test("startup and update wordmarks say StudioTune, not unsloth", () => {
+  const startup = readFileSync(
+    new URL("../src/components/tauri/startup-screen.tsx", import.meta.url),
+    "utf8",
+  );
+  const update = readFileSync(
+    new URL("../src/components/tauri/update-screen.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(startup, /StudioTune/);
+  assert.match(update, /StudioTune/);
+  assert.doesNotMatch(startup, />\s*unsloth\s*</);
+  assert.doesNotMatch(update, />\s*unsloth\s*</);
+  assert.doesNotMatch(startup, /Hellix/);
+  assert.doesNotMatch(update, /Hellix/);
+  assert.doesNotMatch(startup, /To install Unsloth/);
+  assert.doesNotMatch(startup, /Closing Unsloth/);
+});
+
+test("startup, shutdown, and update chrome no longer say Unsloth", () => {
+  const startupMsg = readFileSync(
+    new URL("../src/components/tauri/startup-messages.ts", import.meta.url),
+    "utf8",
+  );
+  const shutdownDlg = readFileSync(
+    new URL("../src/components/shutdown-dialog.tsx", import.meta.url),
+    "utf8",
+  );
+  const tauriBanner = readFileSync(
+    new URL("../src/components/tauri/update-banner.tsx", import.meta.url),
+    "utf8",
+  );
+  const webBanner = readFileSync(
+    new URL("../src/components/web/update-banner.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(startupMsg, /Starting StudioTune/);
+  assert.match(startupMsg, /Installing StudioTune/);
+  assert.doesNotMatch(startupMsg, /Starting Unsloth/);
+  assert.doesNotMatch(startupMsg, /Installing Unsloth/);
+  assert.match(shutdownDlg, /Stop StudioTune/);
+  assert.match(shutdownDlg, /StudioTune has stopped/);
+  assert.doesNotMatch(shutdownDlg, /Stop Unsloth/);
+  assert.doesNotMatch(shutdownDlg, /Unsloth has stopped/);
+  assert.match(tauriBanner, /New StudioTune version/);
+  assert.match(webBanner, /New StudioTune version/);
+  assert.doesNotMatch(tauriBanner, /New Unsloth version/);
+  assert.doesNotMatch(webBanner, /New Unsloth version/);
+});
+

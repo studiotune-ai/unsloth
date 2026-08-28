@@ -551,10 +551,10 @@ export const useAppearanceCustomStore = create<AppearanceCustomState>()(
 /* ------------------------------ DOM applier ------------------------------ */
 
 const DEFAULT_SANS_STACK =
-  '"Inter Variable", ui-sans-serif, sans-serif, system-ui';
+  '"Poppins", "Poppins Variable", ui-sans-serif, system-ui, sans-serif';
 const DEFAULT_HEADING_STACK =
-  '"Hellix", "Space Grotesk Variable", var(--font-sans)';
-const DEFAULT_MONO_STACK = "JetBrains Mono, monospace";
+  '"Poppins", "Poppins Variable", var(--font-sans)';
+const DEFAULT_MONO_STACK = '"IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace';
 
 /** WCAG-ish relative luminance from a #rrggbb hex. */
 function hexLuminance(hex: string): number {

@@ -110,9 +110,9 @@ function Logo() {
       />
       <span
         className="text-ui-50 font-semibold leading-none tracking-[-0.02em] text-foreground"
-        style={{ fontFamily: '"Hellix", sans-serif' }}
+        style={{ fontFamily: '"Poppins", "Poppins Variable", sans-serif' }}
       >
-        unsloth
+        StudioTune
       </span>
     </div>
   );
@@ -166,9 +166,9 @@ function NotInstalledContent({ onInstall }: { onInstall: () => void }) {
       <div className="mb-10 flex flex-col items-center gap-3">
         <p
           className="text-ui-13 font-semibold tracking-[-0.01em] text-muted-foreground"
-          style={{ fontFamily: '"Hellix", sans-serif' }}
+          style={{ fontFamily: '"Poppins", "Poppins Variable", sans-serif' }}
         >
-          To install Unsloth, click Get Started.
+          To install StudioTune, click Get Started.
         </p>
         <ActionButton onClick={onInstall}>
           Get Started
@@ -291,7 +291,7 @@ function ClosingContent() {
       <div className="mb-10 flex w-full flex-col items-center gap-2">
         <Spinner className="size-6 text-primary" />
         <p className="text-sm font-bold text-foreground" aria-live="polite">
-          Closing Unsloth Desktop...
+          Closing StudioTune Desktop...
         </p>
         <p className="text-sm text-muted-foreground">Shutting down the backend.</p>
       </div>

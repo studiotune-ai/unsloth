@@ -41,11 +41,10 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-/// The methods the desktop host will send to Tune Agent. Kept as a small,
-/// stable enum so a driveby that adds a fifth mode has to touch the guard
-/// tests too. Exposed via `pub(crate)` and locked by a unit test rather
-/// than referenced elsewhere yet — the follow-up hop that lands
-/// `tune_agent_request_plan` on the Rust side is what will consume it.
+/// Host-side method names the rail already knows about. `request_plan` is
+/// the frontend invoke; the stdio-json method it maps to is `plan` (see
+/// `TUNE_AGENT_STDIO_METHODS`). grant/train here are host guards, not
+/// stdio methods — this hop does not send train/admit/agent over stdio.
 #[allow(dead_code)]
 pub(crate) const TUNE_AGENT_METHODS: &[&str] = &[
     "ping",
@@ -96,6 +95,18 @@ pub(crate) const TUNE_AGENT_HANDSHAKE_ID: &str = "handshake-1";
 /// anything else would return `STDIO_METHOD_UNKNOWN` and the bridge would
 /// stay disconnected.
 pub(crate) const TUNE_AGENT_HANDSHAKE_METHOD: &str = "ping";
+
+/// Stdio-json methods this hop is allowed to send. Ping is liveness.
+/// Plan is show-only (`authority=false`, `action_taken=false`).
+/// `train`, `admit`, and `agent` are deliberately absent.
+pub(crate) const TUNE_AGENT_STDIO_METHODS: &[&str] = &["ping", "plan"];
+
+/// The show-only method the rail consumes after ping succeeds.
+pub(crate) const TUNE_AGENT_PLAN_METHOD: &str = "plan";
+
+/// Provenance the Desktop host stamps on a live plan request. `fixture`
+/// is reserved for tests; the running window is `live`.
+pub(crate) const TUNE_AGENT_PLAN_PROVENANCE: &str = "live";
 
 /// Environment variable the receipt runner and the Rust bridge both honour
 /// for locating the tune-agent local checkout when no packaged binary is
@@ -916,6 +927,365 @@ async fn ping_sidecar(launch: SidecarLaunch) -> Result<(), String> {
     }
 }
 
+
+/// Show-only outcome plan the rail renders. Field names stay camelCase on
+/// the wire so `makeLiveTuneAgentBridge` can store the invoke result as
+/// `OutcomePlan` without a second mapper.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct OutcomePlan {
+    pub id: String,
+    pub summary: String,
+    pub method: String,
+    pub runtime: String,
+    pub dataset: String,
+    pub cost: String,
+    pub recipe: serde_json::Value,
+}
+
+/// Build one stdio-json `plan` request line. Never includes `engine`,
+/// `admit`, `train`, `parent_ref`, or `mode` — those are executive
+/// smuggles the sidecar refuses.
+pub(crate) fn make_plan_request_line(
+    request_id: &str,
+    session_id: &str,
+    outcome: &str,
+) -> String {
+    let request = serde_json::json!({
+        "id": request_id,
+        "method": TUNE_AGENT_PLAN_METHOD,
+        "session_id": session_id,
+        "outcome": outcome,
+        "provenance": TUNE_AGENT_PLAN_PROVENANCE,
+    });
+    let mut line = serde_json::to_string(&request)
+        .expect("serialise plan request to succeed");
+    line.push('\n');
+    line
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum PlanStdioError {
+    ResponseNotJson { snippet: String },
+    ResponseNotObject,
+    ResponseIdMismatch { got: Option<String>, expected: String },
+    ResponseMethodMismatch { got: Option<String> },
+    SchemaMismatch { got: Option<String>, expected: String },
+    AuthorityNotFalse { got: Option<bool> },
+    ActionTakenNotFalse { got: Option<bool> },
+    PlanFieldMissing,
+}
+
+impl std::fmt::Display for PlanStdioError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PlanStdioError::ResponseNotJson { snippet } => write!(
+                f,
+                "sidecar plan failed: response line was not valid JSON. First 120 chars: {snippet}"
+            ),
+            PlanStdioError::ResponseNotObject => write!(
+                f,
+                "sidecar plan failed: response was not a JSON object."
+            ),
+            PlanStdioError::ResponseIdMismatch { got, expected } => write!(
+                f,
+                "sidecar plan failed: response id was {} but the bridge sent {expected}.",
+                got.as_deref().unwrap_or("<missing>")
+            ),
+            PlanStdioError::ResponseMethodMismatch { got } => write!(
+                f,
+                "sidecar plan failed: response method was {} but the bridge sent plan.",
+                got.as_deref().unwrap_or("<missing>")
+            ),
+            PlanStdioError::SchemaMismatch { got, expected } => write!(
+                f,
+                "sidecar plan failed: response schema was {} but the bridge only accepts {expected}.",
+                got.as_deref().unwrap_or("<missing>")
+            ),
+            PlanStdioError::AuthorityNotFalse { got } => write!(
+                f,
+                "sidecar plan refused: authority was {} — plan is show-only.",
+                got.map(|b| b.to_string()).unwrap_or_else(|| "<missing>".to_string())
+            ),
+            PlanStdioError::ActionTakenNotFalse { got } => write!(
+                f,
+                "sidecar plan refused: action_taken was {} — plan must not execute.",
+                got.map(|b| b.to_string()).unwrap_or_else(|| "<missing>".to_string())
+            ),
+            PlanStdioError::PlanFieldMissing => write!(
+                f,
+                "sidecar plan failed: response omitted the `plan` object."
+            ),
+        }
+    }
+}
+
+/// Validate one sidecar `plan` reply. `ok` may be false (diagnosis hold /
+/// revise) as long as the wrapper stays show-only: method=plan, schema
+/// locked, authority=false, action_taken=false, and a `plan` object is
+/// present. train/admit/agent replies fail-closed here.
+pub(crate) fn validate_plan_response(
+    raw_line: &str,
+    expected_id: &str,
+) -> Result<serde_json::Value, PlanStdioError> {
+    let trimmed = raw_line.trim();
+    let value: serde_json::Value = match serde_json::from_str(trimmed) {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(PlanStdioError::ResponseNotJson {
+                snippet: trimmed.chars().take(120).collect(),
+            });
+        }
+    };
+    let obj = value
+        .as_object()
+        .ok_or(PlanStdioError::ResponseNotObject)?;
+
+    let id = obj.get("id").and_then(serde_json::Value::as_str);
+    if id != Some(expected_id) {
+        return Err(PlanStdioError::ResponseIdMismatch {
+            got: id.map(str::to_string),
+            expected: expected_id.to_string(),
+        });
+    }
+    let method = obj.get("method").and_then(serde_json::Value::as_str);
+    if method != Some(TUNE_AGENT_PLAN_METHOD) {
+        return Err(PlanStdioError::ResponseMethodMismatch {
+            got: method.map(str::to_string),
+        });
+    }
+    let schema = obj.get("schema").and_then(serde_json::Value::as_str);
+    if schema != Some(TUNE_AGENT_STDIO_SCHEMA) {
+        return Err(PlanStdioError::SchemaMismatch {
+            got: schema.map(str::to_string),
+            expected: TUNE_AGENT_STDIO_SCHEMA.to_string(),
+        });
+    }
+    let authority = obj.get("authority").and_then(serde_json::Value::as_bool);
+    if authority != Some(false) {
+        return Err(PlanStdioError::AuthorityNotFalse { got: authority });
+    }
+    let action_taken = obj
+        .get("action_taken")
+        .and_then(serde_json::Value::as_bool);
+    if action_taken != Some(false) {
+        return Err(PlanStdioError::ActionTakenNotFalse { got: action_taken });
+    }
+    match obj.get("plan") {
+        Some(plan) if plan.is_object() => Ok(value),
+        _ => Err(PlanStdioError::PlanFieldMissing),
+    }
+}
+
+fn first_string(values: &[Option<&serde_json::Value>]) -> Option<String> {
+    for value in values {
+        if let Some(serde_json::Value::String(s)) = value {
+            let trimmed = s.trim();
+            if !trimmed.is_empty() {
+                return Some(trimmed.to_string());
+            }
+        }
+    }
+    None
+}
+
+/// Project the sidecar wrapper onto the rail's OutcomePlan. A diagnosis
+/// hold still becomes a card — show-only, never a fake accept.
+pub(crate) fn map_stdio_plan(
+    wrapper: &serde_json::Value,
+    fallback_id: &str,
+) -> OutcomePlan {
+    let plan = wrapper.get("plan").unwrap_or(wrapper);
+    let id = first_string(&[
+        plan.get("session_id"),
+        wrapper.get("id"),
+    ])
+    .unwrap_or_else(|| fallback_id.to_string());
+    let method = first_string(&[plan.get("method")]).unwrap_or_else(|| "UNKNOWN".to_string());
+    let runtime = first_string(&[
+        plan.get("runtime_backend"),
+        plan.get("runtime"),
+    ])
+    .unwrap_or_else(|| "UNKNOWN".to_string());
+    let dataset = first_string(&[
+        plan.get("dataset_identity"),
+        plan.get("dataset"),
+    ])
+    .unwrap_or_else(|| "UNKNOWN".to_string());
+    let cost = match plan.get("estimated_cost_units") {
+        Some(serde_json::Value::String(s)) if s != "UNKNOWN" && !s.is_empty() => {
+            format!("local-only ({s})")
+        }
+        _ => "local-only".to_string(),
+    };
+    let summary = first_string(&[
+        plan.get("next_safe_action"),
+        plan.get("reason"),
+        plan.get("claim_ceiling"),
+        wrapper.get("reason"),
+    ])
+    .unwrap_or_else(|| "StudioTune plan (show-only)".to_string());
+    let recipe = plan
+        .get("recipe")
+        .cloned()
+        .unwrap_or_else(|| {
+            serde_json::json!({
+                "blocked": wrapper.get("ok") == Some(&serde_json::Value::Bool(false)),
+                "code": wrapper.get("code"),
+                "reason": wrapper.get("reason"),
+                "next_safe_action": plan.get("next_safe_action"),
+                "authority": false,
+                "action_taken": false,
+            })
+        });
+    OutcomePlan {
+        id,
+        summary,
+        method,
+        runtime,
+        dataset,
+        cost,
+        recipe,
+    }
+}
+
+fn make_plan_session_id() -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let ms = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis();
+    format!("st-plan-{ms:x}")
+}
+
+/// Short-lived stdio-json `plan` exchange. Same spawn shape as ping.
+/// 15s deadline because plan lazy-imports `modes`; ping stays at 5s.
+async fn request_plan_sidecar(
+    launch: SidecarLaunch,
+    outcome: String,
+) -> Result<OutcomePlan, String> {
+    use std::io::{BufRead, BufReader, Write};
+    use std::process::{Command, Stdio};
+    use std::time::{Duration, Instant};
+
+    let env = sidecar_env();
+    let handle = tokio::task::spawn_blocking(move || -> Result<OutcomePlan, String> {
+        let request_id = "plan-1";
+        let session_id = make_plan_session_id();
+        let mut cmd = match &launch {
+            SidecarLaunch::Binary { path } => {
+                let mut c = Command::new(path);
+                c.arg("--stdio-json");
+                c
+            }
+            SidecarLaunch::PythonModule { python, cwd } => {
+                let mut c = Command::new(python);
+                c.arg("-m").arg("tune_agent").arg("--stdio-json");
+                c.current_dir(cwd);
+                c
+            }
+        };
+        let mut child = cmd
+            .envs(env)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|e| format!("spawn failed for {}: {e}", launch.describe()))?;
+
+        let mut stdin = child
+            .stdin
+            .take()
+            .ok_or_else(|| "sidecar had no stdin".to_string())?;
+        let request_line = make_plan_request_line(request_id, &session_id, &outcome);
+        stdin
+            .write_all(request_line.as_bytes())
+            .map_err(|e| format!("write plan request failed: {e}"))?;
+        drop(stdin);
+
+        let stdout = child
+            .stdout
+            .take()
+            .ok_or_else(|| "sidecar had no stdout".to_string())?;
+        let mut reader = BufReader::new(stdout);
+        let deadline = Instant::now() + Duration::from_secs(15);
+        let mut line = String::new();
+        loop {
+            if Instant::now() > deadline {
+                let _ = child.kill();
+                return Err("sidecar plan timed out after 15s".to_string());
+            }
+            line.clear();
+            match reader.read_line(&mut line) {
+                Ok(0) => {
+                    let _ = child.kill();
+                    return Err("sidecar closed stdout before answering plan".to_string());
+                }
+                Ok(_) => {
+                    if line.trim().is_empty() {
+                        continue;
+                    }
+                    let wrapper = match validate_plan_response(&line, request_id) {
+                        Ok(v) => v,
+                        Err(e) => {
+                            let _ = child.kill();
+                            return Err(e.to_string());
+                        }
+                    };
+                    let _ = child.kill();
+                    return Ok(map_stdio_plan(&wrapper, &session_id));
+                }
+                Err(e) => {
+                    let _ = child.kill();
+                    return Err(format!("read plan failed: {e}"));
+                }
+            }
+        }
+    })
+    .await;
+    match handle {
+        Ok(inner) => inner,
+        Err(join) => Err(format!("plan task join error: {join}")),
+    }
+}
+
+/// Ask the sidecar for a show-only plan. Returns `Ok(None)` when the
+/// rail is disconnected or the prompt is empty. Transport / contract
+/// failures return `Err` so the live frontend bridge can fail-closed.
+#[tauri::command]
+pub(crate) async fn tune_agent_request_plan(
+    state: tauri::State<'_, TuneAgentState>,
+    request: String,
+) -> Result<Option<OutcomePlan>, String> {
+    let outcome = request.trim().to_string();
+    if outcome.is_empty() {
+        return Ok(None);
+    }
+    {
+        let inner = state.inner.lock().map_err(|e| e.to_string())?;
+        if !inner.connected {
+            return Ok(None);
+        }
+    }
+    let launch = resolve_sidecar_launch(&RealSidecarEnv, None).ok_or_else(|| {
+        "tune_agent_request_plan refused: could not resolve a tune-agent sidecar".to_string()
+    })?;
+    match request_plan_sidecar(launch, outcome).await {
+        Ok(plan) => Ok(Some(plan)),
+        Err(e) => {
+            let mut inner = state.inner.lock().map_err(|err| err.to_string())?;
+            inner.last_error = Some(e.clone());
+            if e.contains("spawn failed")
+                || e.contains("timed out")
+                || e.contains("closed stdout")
+            {
+                inner.connected = false;
+            }
+            Err(e)
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -1115,6 +1485,10 @@ mod tests {
             TUNE_AGENT_METHODS,
             &["ping", "set_mode", "request_plan", "grant", "train", "shutdown"]
         );
+        assert_eq!(TUNE_AGENT_STDIO_METHODS, &["ping", "plan"]);
+        assert!(!TUNE_AGENT_STDIO_METHODS.contains(&"train"));
+        assert!(!TUNE_AGENT_STDIO_METHODS.contains(&"admit"));
+        assert!(!TUNE_AGENT_STDIO_METHODS.contains(&"agent"));
     }
 
     // The two tests below exercise the admit policy against the *real*
@@ -1576,5 +1950,108 @@ mod tests {
                 launch.describe()
             )
         });
+    }
+
+    #[test]
+    fn plan_request_line_is_show_only_and_never_sends_executive_fields() {
+        let line = make_plan_request_line("plan-1", "st-plan-1", "Fine-tune a local LoRA");
+        let value: serde_json::Value = serde_json::from_str(line.trim()).unwrap();
+        let obj = value.as_object().unwrap();
+        assert_eq!(obj.get("id").and_then(|v| v.as_str()), Some("plan-1"));
+        assert_eq!(
+            obj.get("method").and_then(|v| v.as_str()),
+            Some(TUNE_AGENT_PLAN_METHOD)
+        );
+        assert_eq!(obj.get("session_id").and_then(|v| v.as_str()), Some("st-plan-1"));
+        assert_eq!(
+            obj.get("outcome").and_then(|v| v.as_str()),
+            Some("Fine-tune a local LoRA")
+        );
+        assert_eq!(
+            obj.get("provenance").and_then(|v| v.as_str()),
+            Some(TUNE_AGENT_PLAN_PROVENANCE)
+        );
+        for forbidden in ["engine", "admit", "train", "parent_ref", "mode"] {
+            assert!(
+                !obj.contains_key(forbidden),
+                "plan request must not send {forbidden}"
+            );
+        }
+    }
+
+    fn well_formed_plan_hold() -> String {
+        r#"{"action_taken":false,"authority":false,"code":"OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS","id":"plan-1","method":"plan","ok":false,"plan":{"action_taken":false,"authority":false,"blocked_at":"diagnosis","code":"OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS","method":"UNKNOWN","next_safe_action":"request-verified-dataset-facts","ok":false,"reason":"blocking_findings_outstanding","runtime_backend":"UNKNOWN","dataset_identity":"UNKNOWN","session_id":"st-plan-1"},"reason":"blocking_findings_outstanding","schema":"studiotune.tune-agent-stdio.v1"}"#.to_string()
+    }
+
+    #[test]
+    fn validate_plan_response_accepts_a_show_only_diagnosis_hold() {
+        let wrapper = validate_plan_response(&well_formed_plan_hold(), "plan-1")
+            .expect("show-only hold must be admissible");
+        assert_eq!(wrapper.get("ok"), Some(&serde_json::Value::Bool(false)));
+        let mapped = map_stdio_plan(&wrapper, "fallback");
+        assert_eq!(mapped.id, "st-plan-1");
+        assert_eq!(mapped.summary, "request-verified-dataset-facts");
+        assert_eq!(mapped.method, "UNKNOWN");
+        assert_eq!(mapped.runtime, "UNKNOWN");
+        assert_eq!(mapped.dataset, "UNKNOWN");
+        assert_eq!(mapped.cost, "local-only");
+        assert_eq!(mapped.recipe["authority"], false);
+        assert_eq!(mapped.recipe["action_taken"], false);
+    }
+
+    #[test]
+    fn validate_plan_response_refuses_authority_true() {
+        let raw = r#"{"ok":true,"id":"plan-1","method":"plan","schema":"studiotune.tune-agent-stdio.v1","authority":true,"action_taken":false,"plan":{}}"#;
+        let err = validate_plan_response(raw, "plan-1").expect_err("must refuse authority");
+        assert!(matches!(err, PlanStdioError::AuthorityNotFalse { got: Some(true) }));
+    }
+
+    #[test]
+    fn validate_plan_response_refuses_action_taken_true() {
+        let raw = r#"{"ok":true,"id":"plan-1","method":"plan","schema":"studiotune.tune-agent-stdio.v1","authority":false,"action_taken":true,"plan":{}}"#;
+        let err = validate_plan_response(raw, "plan-1").expect_err("must refuse action_taken");
+        assert!(matches!(err, PlanStdioError::ActionTakenNotFalse { got: Some(true) }));
+    }
+
+    #[test]
+    fn validate_plan_response_refuses_train_method() {
+        let raw = r#"{"ok":true,"id":"plan-1","method":"train","schema":"studiotune.tune-agent-stdio.v1","authority":false,"action_taken":false,"plan":{}}"#;
+        let err = validate_plan_response(raw, "plan-1").expect_err("must refuse train");
+        assert!(matches!(
+            err,
+            PlanStdioError::ResponseMethodMismatch { got: Some(ref m) } if m == "train"
+        ));
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn real_mac_sidecar_plan_is_show_only() {
+        let env = RealSidecarEnv;
+        let launch = match resolve_sidecar_launch(&env, None) {
+            Some(l) => l,
+            None => {
+                eprintln!(
+                    "SKIP real_mac_sidecar_plan_is_show_only: no tune-agent sidecar"
+                );
+                return;
+            }
+        };
+        let rt = match tokio::runtime::Runtime::new() {
+            Ok(r) => r,
+            Err(e) => {
+                eprintln!("SKIP real_mac_sidecar_plan_is_show_only: tokio: {e}");
+                return;
+            }
+        };
+        let plan = rt
+            .block_on(request_plan_sidecar(
+                launch.clone(),
+                "Fine-tune a local LoRA on a local dataset".to_string(),
+            ))
+            .unwrap_or_else(|e| panic!("live stdio plan must answer against {}: {e}", launch.describe()));
+        assert!(!plan.summary.is_empty());
+        assert_eq!(plan.cost, "local-only");
+        assert_ne!(plan.recipe.get("authority"), Some(&serde_json::Value::Bool(true)));
+        assert_ne!(plan.recipe.get("action_taken"), Some(&serde_json::Value::Bool(true)));
     }
 }

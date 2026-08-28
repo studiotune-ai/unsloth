@@ -64,8 +64,8 @@ const PALETTE_DEFAULT_COLORS: Record<
   Record<ResolvedTheme, DefaultModeColors>
 > = {
   standard: {
-    light: { accent: "#17b88b", background: "#fefefd", foreground: "#262626" },
-    dark: { accent: "#17b88b", background: "#181818", foreground: "#ececec" },
+    light: { accent: "#a9c7ff", background: "#fefefd", foreground: "#262626" },
+    dark: { accent: "#a9c7ff", background: "#181818", foreground: "#ececec" },
   },
   classic: {
     light: { accent: "#339cff", background: "#ffffff", foreground: "#1a1c1f" },
@@ -124,17 +124,16 @@ export function ActiveColorControl({
 
 /** Font each slot resolves to when no override is set (see index.css). */
 const DEFAULT_FONT_NAMES = {
-  ui: "Inter Variable",
-  heading: "Hellix",
-  chat: "Inter Variable",
+  ui: "Poppins",
+  heading: "Poppins",
+  chat: "Poppins",
   code: "JetBrains Mono",
 } as const;
 
-/** Fonts Unsloth already ships (bundled @font-face / fontsource). */
+/** Fonts StudioTune ships as the live face, plus leftover host faces. */
 const BUNDLED_FONTS = [
-  "Inter Variable",
-  "Hellix",
-  "Space Grotesk Variable",
+  "Poppins",
+  "IBM Plex Mono",
   "Figtree Variable",
   "JetBrains Mono",
   "Fira Code",

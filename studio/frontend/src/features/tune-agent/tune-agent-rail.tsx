@@ -645,6 +645,13 @@ function RailPlanSurface({
           onAccept: () => onAcceptStep(),
         }}
       />
+        <p
+          className="mt-2 text-[11px]"
+          data-testid="tune-agent-stdio-plan-stamp"
+          style={{ color: "var(--ai-faint)", fontFamily: "var(--studiotune-font-mono)" }}
+        >
+          stdio plan · show-only · authority=false · action_taken=false
+        </p>
     </div>
   );
 }
