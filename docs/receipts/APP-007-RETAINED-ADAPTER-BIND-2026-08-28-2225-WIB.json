@@ -1,0 +1,54 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-007-RETAINED-ADAPTER-BIND-2026-08-28-2225-WIB",
+  "issue": "APP-007",
+  "linear": "AIN-938",
+  "ain952_leftover": "AIN-952 compare stays HOLD until a real parent+candidate inference log exists",
+  "hop": "unsloth-host-bind-inspect",
+  "when": "2026-08-28 22:25 WIB",
+  "repo": "studiotune-ai/unsloth",
+  "pr": 1,
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "base_head": "5790d4d07",
+  "kind": "retained_adapter",
+  "not_fake_qlora": true,
+  "adapter": {
+    "dir": "/tmp/studiotune-cli-007/adapter",
+    "weights": "/tmp/studiotune-cli-007/adapter/adapters.safetensors",
+    "sha256": "4842bc09742a8bc72db1388d375fe025179697ded5deba8ddaccfc5a5b9ea8b3",
+    "config_sha256": "15fe42f29a937c35084632b1e1c46790162065a53753a542f417cb94afcddfc1",
+    "trained_this_hop": false
+  },
+  "parent_snapshot": {
+    "path": "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+    "exists": true,
+    "blob_count": 9,
+    "hub_fetch": false
+  },
+  "host": {
+    "pid": 76422,
+    "binary": "studio/src-tauri/target/release/bundle/macos/StudioTune.app/Contents/MacOS/unsloth-studio",
+    "signed": false,
+    "rebuilt_this_hop": false
+  },
+  "tests": {
+    "command": "node --experimental-strip-types --test tests/compare-quality.test.ts tests/retained-adapter-bind.test.ts",
+    "passed": 12,
+    "failed": 0,
+    "compare_quality": { "passed": 6, "failed": 0 },
+    "retained_adapter_bind": { "passed": 6, "failed": 0 }
+  },
+  "compare_quality_claimed": false,
+  "trained": false,
+  "hub_fetch": false,
+  "signed": false,
+  "merged": false,
+  "beta_ready_claim": false,
+  "authority": false,
+  "notes": [
+    "Live inspect only: sha256 adapters.safetensors starts 4842bc09 (verified). Parent snapshot on disk, 9 blobs, no download.",
+    "bindRetainedAdapter records kind=retained_adapter with qualityClaimed=false, authority=false, trainedThisHop=false.",
+    "Desktop must not claim MLX via FakeExecutor. This hop does not change desktop-app #11.",
+    "AIN-952 leftover: /compare stays HOLD. No live parent/candidate inference log, so quality is not claimed."
+  ]
+}

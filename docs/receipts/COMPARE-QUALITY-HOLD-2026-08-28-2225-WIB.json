@@ -1,0 +1,52 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "COMPARE-QUALITY-HOLD-2026-08-28-2225-WIB",
+  "issue": "APP-007",
+  "linear": "AIN-938",
+  "ain952_leftover": "AIN-952 compare stays HOLD — no live parent/candidate inference yet",
+  "hop": "compare-quality-freeze",
+  "when": "2026-08-28 22:25 WIB",
+  "repo": "studiotune-ai/unsloth",
+  "pr": 1,
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "base_head": "5790d4d07",
+  "surface": "studio/frontend/src/features/compare/compare-page.tsx",
+  "module": "studio/frontend/src/features/compare/compare-quality.ts",
+  "route": "/compare",
+  "status": "HOLD",
+  "compare_quality_claimed": false,
+  "authority": false,
+  "reason": "no live parent/candidate inference yet",
+  "fixtures_are_not_quality": true,
+  "hub_paths_refused": true,
+  "trained": false,
+  "hub_fetch": false,
+  "signed": false,
+  "merged": false,
+  "beta_ready_claim": false,
+  "adapter_sha256": "4842bc09742a8bc72db1388d375fe025179697ded5deba8ddaccfc5a5b9ea8b3",
+  "parent_snapshot": "/Users/hizrianraz/.cache/huggingface/hub/models--mlx-community--Qwen2.5-0.5B-Instruct-4bit/snapshots/a5339a4131f135d0fdc6a5c8b5bbed2753bbe0f3",
+  "tests": {
+    "path": "studio/frontend/tests/compare-quality.test.ts",
+    "passed": 6,
+    "failed": 0,
+    "bind_tests_path": "studio/frontend/tests/retained-adapter-bind.test.ts",
+    "bind_passed": 6,
+    "bind_failed": 0,
+    "total_passed": 12,
+    "total_failed": 0
+  },
+  "page": {
+    "data_studiotune_status": "hold",
+    "empty_state": "No candidate to compare yet",
+    "quality_score_present": false,
+    "second_compare_page": false,
+    "fake_table": false
+  },
+  "notes": [
+    "evaluateCompareQuality always returns claimed=false, status=HOLD, authority=false on this hop.",
+    "Empty/missing parent or candidate, fixture logs, and even a real local pair without a live inference log stay HOLD.",
+    "Hub / remote paths (https, hf://, bare hub ids) throw CompareQualityRefused.",
+    "AIN-952 leftover: compare quality remains unproven. Do not treat this receipt as a score."
+  ]
+}

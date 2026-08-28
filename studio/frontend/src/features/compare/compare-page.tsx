@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright 2026-present Ainfera Inc. See /studio/LICENSE.AGPL-3.0.
 
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useMemo } from "react";
+
+import { evaluateCompareQuality } from "./compare-quality";
+import {
+  CLI007_RETAINED,
+  bindRetainedAdapter,
+} from "./retained-adapter-bind";
 
 /**
  * StudioTune Compare — parent vs candidate.
@@ -10,11 +16,35 @@ import { useLayoutEffect } from "react";
  * an honest disconnected/empty state instead of a fake table. When fixtures
  * land it should label them as reference, not quality, and never Hub-fetch
  * models to score them.
+ *
+ * APP-007: a retained CLI-007 adapter may be bound for inspect. That bind
+ * does not claim quality — quality stays HOLD until a live parent/candidate
+ * inference log exists.
  */
 export function ComparePage() {
   useLayoutEffect(() => {
     window.dispatchEvent(new Event("unsloth:app-shell-ready"));
   }, []);
+
+  const quality = useMemo(
+    () =>
+      evaluateCompareQuality({
+        parentPath: null,
+        candidatePath: null,
+        log: null,
+      }),
+    [],
+  );
+
+  const retained = useMemo(
+    () =>
+      bindRetainedAdapter({
+        adapterDir: CLI007_RETAINED.adapterDir,
+        parentSnapshotDir: CLI007_RETAINED.parentSnapshotDir,
+        adapterSha256: CLI007_RETAINED.adapterSha256,
+      }),
+    [],
+  );
 
   return (
     <div
@@ -57,6 +87,25 @@ export function ComparePage() {
             Compare surfaces once a StudioTune training run produces a candidate
             checkpoint on this machine. This hop ships the rail and the empty
             state; the reference-vs-candidate table lands next.
+          </p>
+          <p
+            className="mt-4 text-xs"
+            style={{ color: "var(--ai-muted)" }}
+            data-studiotune-quality-claimed="false"
+            data-studiotune-authority="false"
+          >
+            quality_claimed=false · status={quality.status} · {quality.reason}
+          </p>
+          <p
+            className="mt-2 text-xs"
+            style={{ color: "var(--ai-muted)" }}
+            data-studiotune-retained-adapter="true"
+            data-studiotune-retained-kind={retained.kind}
+          >
+            retained adapter bound, quality HOLD
+          </p>
+          <p className="mt-1 font-mono text-[11px]" style={{ color: "var(--ai-muted)" }}>
+            sha256 {retained.adapterSha256.slice(0, 8)}… · parent snapshot on disk
           </p>
         </div>
       </section>
