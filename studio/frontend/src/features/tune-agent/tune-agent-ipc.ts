@@ -34,12 +34,12 @@ import type {
  *    downgrades the bridge to disconnected so the rail still renders.
  */
 
-// Fixed default location for the Tune Agent sidecar the host is willing to
-// launch. The desktop never resolves through `$PATH` (Tauri invokes take an
-// absolute path) and never fetches the binary. Users install Tune Agent
-// side-by-side with StudioTune; a follow-up hop can add a Settings UI to
-// point at a dirty tree.
-export const DEFAULT_TUNE_AGENT_BINARY_PATH = "~/.studiotune/tune-agent";
+// Empty default: the Rust host prefers the bundled sidecar
+// (`<exe_dir>/tune-agent` = StudioTune.app/Contents/MacOS/tune-agent)
+// over `$HOME/.studiotune/tune-agent` and `$PATH`. A caller may still
+// pass an absolute / `~/...` path when they mean a specific binary.
+// Never a Hub id. Never fetched.
+export const DEFAULT_TUNE_AGENT_BINARY_PATH = "";
 
 // Shape the Rust `tune_agent_status` command returns. Kept minimal on
 // purpose so a follow-up field on the Rust side does not silently redefine

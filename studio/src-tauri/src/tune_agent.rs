@@ -582,6 +582,14 @@ impl SidecarEnv for RealSidecarEnv {
     fn home_dir(&self) -> Option<PathBuf> {
         dirs::home_dir()
     }
+
+    /// Next to the running host binary: StudioTune.app/Contents/MacOS
+    /// when launched from the bundle, or the cargo target dir in a
+    /// local rebuild. Trait default is `None` so stubs stay honest.
+    fn bundled_sidecar_dir(&self) -> Option<PathBuf> {
+        let exe = std::env::current_exe().ok()?;
+        exe.parent().map(Path::to_path_buf)
+    }
 }
 
 /// Expand a caller-supplied sidecar path. Absolute paths pass through.

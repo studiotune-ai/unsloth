@@ -70,7 +70,7 @@ test("loader downgrades to disconnected when the sidecar cannot start", async ()
         connected: false,
         binary: DEFAULT_TUNE_AGENT_BINARY_PATH,
         admit: null,
-        lastError: "no tune-agent binary at ~/.studiotune/tune-agent",
+        lastError: "no tune-agent binary at bundled Contents/MacOS/tune-agent",
       };
     }
     throw new Error(`unexpected invoke: ${cmd}`);
