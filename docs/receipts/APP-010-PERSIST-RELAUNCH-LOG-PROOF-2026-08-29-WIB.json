@@ -1,0 +1,109 @@
+{
+  "id": "APP-010-PERSIST-RELAUNCH-LOG-PROOF-2026-08-29-WIB",
+  "issue": "APP-010",
+  "linear": "AIN-952",
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "hop": "persist-relaunch-log-proof",
+  "when": "2026-08-29 00:31 WIB",
+  "timestamp_wib": "2026-08-29 00:31 WIB",
+  "status": "HOLD",
+  "repo": "studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": 1,
+  "head": "57e5bbd12839ae52233a4df094a1d459114cfcda",
+  "head_short": "57e5bbd12",
+  "via": "hydrateAcceptedLocalDatasetBind + buildOutcomePlan",
+  "persist_surface": "test-localStorage (not live webview)",
+  "persist_key": "studiotune.home.dataset-bind.v1",
+  "live_webview_store": {
+    "path": "/Users/hizrianraz/Library/WebKit/ai.studiotune.desktop/WebsiteData/Default/Bxs52IhCkUHAd0ccfvuK4v50wfJ8y8j4ITBNHwy1v6w/Bxs52IhCkUHAd0ccfvuK4v50wfJ8y8j4ITBNHwy1v6w/LocalStorage/localstorage.sqlite3",
+    "key_present": false,
+    "count_bind": 0,
+    "running_window_bind": "empty",
+    "note": "User never Accepted a local-files proposal in this window. No fake bind written."
+  },
+  "receipt_status": "ADMITTED",
+  "isRuntimeAdmitted": true,
+  "runtimeAdmitted_source": "isRuntimeAdmitted(receipt)",
+  "persisted_bind": {
+    "path": "./train.jsonl",
+    "hash": "36cc622c7c209285fed1ab454eea492759bb578be83eb92ba2665dd956eae8a3",
+    "authority": false
+  },
+  "hydrated_bind": {
+    "path": "./train.jsonl",
+    "hash": "36cc622c7c209285fed1ab454eea492759bb578be83eb92ba2665dd956eae8a3",
+    "authority": false
+  },
+  "after_hydrate": {
+    "dataset": "./train.jsonl",
+    "clarifications": [],
+    "missing_dataset": false,
+    "missing_admit": false,
+    "admit_step": "ready",
+    "train_step": "ready",
+    "inspect_dataset_step": "ready",
+    "authority": false,
+    "action_taken": false
+  },
+  "after_clear": {
+    "dataset": "UNKNOWN",
+    "memory_path": null,
+    "store": null,
+    "clarifications": [
+      "missing-dataset"
+    ],
+    "missing_dataset": true,
+    "missing_admit": false,
+    "inspect_dataset_step": "clarification",
+    "admit_step": "ready",
+    "train_step": "ready"
+  },
+  "discriminating_negative": {
+    "runtimeAdmitted": false,
+    "dataset": "./train.jsonl",
+    "clarifications": [
+      "missing-admit"
+    ],
+    "missing_dataset": false,
+    "missing_admit": true,
+    "admit_step": "clarification",
+    "train_step": "clarification"
+  },
+  "tests": {
+    "path": "studio/frontend/tests/local-files-home-bind.test.ts",
+    "command": "node --experimental-strip-types --test tests/local-files-home-bind.test.ts",
+    "count": 11,
+    "pass": 11,
+    "fail": 0
+  },
+  "log_excerpts": [
+    "after_hydrate.clarifications=[] missing-dataset=false missing-admit=false admit=ready train=ready",
+    "after_clear.clarifications=['missing-dataset'] missing-admit=false admit=ready",
+    "negative runtimeAdmitted=false clarifications=['missing-admit'] admit=clarification train=clarification"
+  ],
+  "trained": false,
+  "train_this_hop": false,
+  "engine_called": false,
+  "grant_this_hop": false,
+  "hub_contacted": false,
+  "pixel": "UNPROVEN",
+  "pixel_proven": false,
+  "beta_ready_claim": false,
+  "signed": false,
+  "sign_this_hop": false,
+  "notarize": false,
+  "notarize_this_hop": false,
+  "publish_this_hop": false,
+  "merge_desktop_app_11": false,
+  "authority": false,
+  "action_taken": false,
+  "verdict": "hold",
+  "notes": [
+    "Source hydrate from studiotune.home.dataset-bind.v1 + ADMITTED receipt: buildOutcomePlan fires neither missing-dataset nor missing-admit.",
+    "Clear drops memory and store: missing-dataset returns; missing-admit stays absent.",
+    "Discriminating negative: runtimeAdmitted=false with a dataset still fires missing-admit and blocks admit+train.",
+    "Live WebKit localStorage has no bind key. running_window_bind=empty. No fake write.",
+    "Pixel UNPROVEN. No train. No merge #11."
+  ]
+}
