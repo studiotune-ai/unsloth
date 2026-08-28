@@ -4,7 +4,7 @@
 import { applyPlanRecipe } from "@/features/tune-agent";
 import { useNavigate } from "@tanstack/react-router";
 import type { FormEvent } from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { loadTuneAgentBridge } from "@/features/tune-agent";
 import {
   type OutcomePlanCard,
@@ -83,6 +83,48 @@ export function HomeComposer({
     () => isPromptEffectivelyEmpty(prompt),
     [prompt],
   );
+
+  // One-shot: when Tune Agent is connected, paint the live sidecar plan
+  // (diagnosis HOLD / REVISE) without a click so the running window shows
+  // the same wire the no-click IPC already proved. Never trains.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const bridge = await loadTuneAgentBridge();
+      if (cancelled || !bridge.getState().connected) {
+        return;
+      }
+      const live = await bridge.requestPlan(
+        "Fine-tune a local LoRA on a local dataset",
+      );
+      if (cancelled || live === null) {
+        return;
+      }
+      const nextCard = adaptBridgePlanToCard(live, facts.runtimeAdmitted);
+      if (planCardHasHubId(nextCard)) {
+        return;
+      }
+      setCard(nextCard);
+      usePlanSessionStore
+        .getState()
+        .publishPlan(
+          "Fine-tune a local LoRA on a local dataset",
+          facts,
+          nextCard,
+        );
+      setLastReason(
+        nextCard.diagnosis
+          ? `HOLD · ${nextCard.diagnosis.disposition} · ${nextCard.diagnosis.code}`
+          : "Live sidecar plan painted.",
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // First paint only — later prompt submits replace this card.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

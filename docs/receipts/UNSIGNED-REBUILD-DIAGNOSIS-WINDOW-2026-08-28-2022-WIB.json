@@ -1,0 +1,26 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "UNSIGNED-REBUILD-DIAGNOSIS-WINDOW-2026-08-28-2022-WIB",
+  "generatedAtWib": "2026-08-28 20:23:02 WIB",
+  "host": "HizrianacStudio.localdomain",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "lock": "CoS: unsigned rebuild so HOLD/REVISE is in the running window.",
+  "beta_ready_claim": false,
+  "pid": 14179,
+  "startedWib": "2026-08-28 20:22:34 WIB",
+  "binarySha256": "86f2e3ce8090e7c076c6f44500b832e4bc519478e24a08d42c67ef9a0b810c5b",
+  "binaryContains": {
+    "index-BOZof_gf": true,
+    "home-plan-diagnosis_plaintext": false
+  },
+  "frontendDist": {
+    "file": "index-BOZof_gf.js",
+    "home-plan-diagnosis": 1,
+    "HOLD": 2,
+    "bootPrompt": "Fine-tune a local LoRA on a local dataset"
+  },
+  "bannerVisibleInWindow": "unproven",
+  "bannerVisibleReason": "new frontend is embedded; window capture blocked; auto-request runs on Home mount when connected",
+  "cargo_build_release": "passed twice, no Auto-review raise",
+  "next_safe_action": "HOLD"
+}
