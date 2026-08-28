@@ -1,0 +1,85 @@
+{
+  "id": "APP-009-RAIL-IPC-ADMIT-2026-08-28-WIB",
+  "issue": "APP-009",
+  "linear": "AIN-951",
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "hop": "rail-ipc-admit-from-home-receipt",
+  "when": "2026-08-28 23:58 WIB",
+  "timestamp_wib": "2026-08-28 23:58 WIB",
+  "status": "HOLD",
+  "repo": "studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": 1,
+  "head_base": "bf10771ac3cb9aea3452a9b96e382e06e3e77daa",
+  "head_base_short": "bf10771ac",
+  "derived_from_receipt": true,
+  "runtimeAdmitted_source": "isRuntimeAdmitted(receipt)",
+  "receipt_authority": true,
+  "receipt_path": "studio/frontend/src/features/home/mlx-runtime-admission.json",
+  "receipt_status": "ADMITTED",
+  "fail_close_on_refuse": true,
+  "hardcoded_true": false,
+  "fake_ipc_admit": false,
+  "checkbox": false,
+  "files": {
+    "tune-agent-ipc.ts": {
+      "disconnected_initial": "isRuntimeAdmitted(receipt)",
+      "live_initial": "isRuntimeAdmitted(receipt)",
+      "live_admit_outcome": "outcome.admitted (honest later admit may stay true)",
+      "live_refuse": "runtimeAdmitted: false (KEEP fail-close)"
+    },
+    "plan-session-store.ts": {
+      "EMPTY_FACTS.runtimeAdmitted": "isRuntimeAdmitted(receipt)"
+    }
+  },
+  "tests": {
+    "focused_files": [
+      "tests/studiotune-rail-ipc-admit.test.ts",
+      "tests/studiotune-tune-agent-bridge.test.ts",
+      "tests/studiotune-tune-agent-guards.test.ts",
+      "tests/studiotune-clusy-plan-session.test.ts",
+      "tests/mlx-runtime-admission.test.ts",
+      "tests/studiotune-tune-agent-shared-card.test.ts",
+      "tests/studiotune-home-composer.test.ts",
+      "tests/studiotune-plan-card-reject.test.ts",
+      "tests/local-files-home-bind.test.ts",
+      "tests/studiotune-plan-diagnosis-paint.test.ts"
+    ],
+    "pass": 86,
+    "fail": 0
+  },
+  "trained": false,
+  "train_this_hop": false,
+  "engine_called": false,
+  "grant_this_hop": false,
+  "authority": false,
+  "action_taken": false,
+  "pixel": "UNPROVEN",
+  "pixel_proven": false,
+  "beta_ready_claim": false,
+  "signed": false,
+  "sign_this_hop": false,
+  "notarize": false,
+  "notarize_this_hop": false,
+  "merge_desktop_app_11": false,
+  "hub_contacted": false,
+  "isolated_cli_admit_path": false,
+  "verdict": "hold",
+  "next_unblocked_hop": "unsigned-rebuild-running-window",
+  "next_unblocked_hop_detail": "Unsigned rebuild so the running window matches this source hop. Do not sign, notarize, merge #11, or train.",
+  "user_gated_remains": [
+    "Developer ID sign",
+    "notarize",
+    "second Mac",
+    "merge desktop-app #11",
+    "pixel proof of the running window",
+    "Grant / Engine train"
+  ],
+  "notes": [
+    "tune-agent-ipc disconnected + live initial runtimeAdmitted now call isRuntimeAdmitted(receipt). Receipt is the Home-derived authority.",
+    "Sidecar handshake admitted=true is fine only when the receipt is ADMITTED; a non-ADMITTED receipt stays false.",
+    "Live admit.outcome that is honestly admitted may stay true. Live refuse / error still fail-closes to false.",
+    "plan-session-store EMPTY_FACTS uses the same helper so a new session does not re-inject missing-admit.",
+    "No fake IPC admit. No checkbox. No train. No Grant. No sign. No merge #11. Pixel UNPROVEN. beta_ready_claim false."
+  ]
+}

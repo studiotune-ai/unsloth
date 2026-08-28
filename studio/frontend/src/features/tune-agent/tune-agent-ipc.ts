@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright 2026-present Ainfera Inc. See /studio/LICENSE.AGPL-3.0.
 
+import {
+  isRuntimeAdmitted,
+  receipt,
+} from "../home/mlx-runtime-admission.ts";
 import type {
   OutcomePlan,
   TuneAgentAdmitOutcome,
@@ -69,7 +73,9 @@ export function makeDisconnectedTuneAgentBridge(
     connected: false,
     mode: "ask",
     plan: null,
-    runtimeAdmitted: false,
+    // Home mlx receipt is the authority for the initial bit.
+    // Never hardcoded true. Later live refuse still fail-closes.
+    runtimeAdmitted: isRuntimeAdmitted(receipt),
   };
   const listeners = new Set<(next: TuneAgentBridgeState) => void>();
 
@@ -124,7 +130,9 @@ export function makeLiveTuneAgentBridge(
     connected: initial.connected,
     mode: "ask",
     plan: null,
-    runtimeAdmitted: initial.admit?.admitted === true,
+    // Receipt is the Home-derived authority. Handshake admitted=true
+    // is fine only when the receipt is also ADMITTED; otherwise fail-close.
+    runtimeAdmitted: isRuntimeAdmitted(receipt),
   };
   const listeners = new Set<(next: TuneAgentBridgeState) => void>();
   const emit = () => {

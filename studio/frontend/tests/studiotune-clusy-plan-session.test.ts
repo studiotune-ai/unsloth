@@ -24,8 +24,10 @@ import {
   planCardHasHubId,
   type OutcomePlanFacts,
 } from "../src/features/home/outcome-plan-builder.ts";
+import { isRuntimeAdmitted, receipt } from "../src/features/home/mlx-runtime-admission.ts";
 import {
   branchFromPlan,
+  EMPTY_PLAN_SESSION,
   planAllowsFollowWorkspace,
   skipOptionalStep,
   usePlanSessionStore,
@@ -193,3 +195,20 @@ test("PlanCard exposes Discard, Branch, and Revise without a train control", () 
     "PlanCard must not wire a startTrain onClick",
   );
 });
+
+test("new plan session derives runtimeAdmitted from the Home receipt helper", () => {
+  assert.equal(
+    EMPTY_PLAN_SESSION.facts.runtimeAdmitted,
+    isRuntimeAdmitted(receipt),
+  );
+  const reset = usePlanSessionStore.getState();
+  assert.equal(reset.facts.runtimeAdmitted, isRuntimeAdmitted(receipt));
+  const storeSrc = readFileSync(
+    new URL("../src/features/home/plan-session-store.ts", import.meta.url),
+    "utf8",
+  );
+  assert.ok(storeSrc.includes("isRuntimeAdmitted(receipt)"));
+  assert.ok(!/runtimeAdmitted:\s*false/.test(storeSrc));
+  assert.ok(!/runtimeAdmitted:\s*true/.test(storeSrc));
+});
+

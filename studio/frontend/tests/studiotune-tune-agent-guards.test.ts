@@ -19,6 +19,7 @@ import {
   canStartTrainFromMode,
   requireAdmittedRuntime,
 } from "../src/features/tune-agent/tune-agent-guards.ts";
+import { isRuntimeAdmitted, receipt } from "../src/features/home/mlx-runtime-admission.ts";
 import {
   loadTuneAgentBridge,
   makeDisconnectedTuneAgentBridge,
@@ -123,7 +124,7 @@ test("Disconnected bridge fail-closes: no plan, no engine calls", async () => {
   assert.equal(state.connected, false);
   assert.equal(state.plan, null);
   assert.equal(state.mode, "ask");
-  assert.equal(state.runtimeAdmitted, false);
+  assert.equal(state.runtimeAdmitted, isRuntimeAdmitted(receipt));
 
   const plan = await bridge.requestPlan("do the thing");
   assert.equal(

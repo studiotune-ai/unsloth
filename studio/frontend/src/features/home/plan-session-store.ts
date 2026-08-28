@@ -22,6 +22,7 @@
 
 import { create } from "zustand";
 
+import { isRuntimeAdmitted, receipt } from "./mlx-runtime-admission.ts";
 import {
   buildOutcomePlan,
   isPromptEffectivelyEmpty,
@@ -52,7 +53,9 @@ export type PlanSessionState = {
 const EMPTY_FACTS: OutcomePlanFacts = {
   parent: null,
   dataset: null,
-  runtimeAdmitted: false,
+  // Same Home helper as the composer. A new session must not re-inject
+  // missing-admit when the persisted mlx receipt is ADMITTED.
+  runtimeAdmitted: isRuntimeAdmitted(receipt),
 };
 
 export const EMPTY_PLAN_SESSION: PlanSessionState = {

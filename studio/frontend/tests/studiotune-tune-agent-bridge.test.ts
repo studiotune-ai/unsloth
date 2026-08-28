@@ -24,6 +24,7 @@ import {
   canStartTrainFromMode,
   requireAdmittedRuntime,
 } from "../src/features/tune-agent/tune-agent-guards.ts";
+import { isRuntimeAdmitted, receipt } from "../src/features/home/mlx-runtime-admission.ts";
 import {
   DEFAULT_TUNE_AGENT_BINARY_PATH,
   loadTuneAgentBridge,
@@ -252,16 +253,20 @@ test("guards still hold with a live bridge in play", async () => {
   bridge.setMode("plan");
   assert.equal(canStartTrainFromMode(bridge.getState().mode), false);
 
-  // Agent mode without admit → refuse-close, with a reason string.
+  // Initial admit is Home-receipt-derived, not hardcoded false.
+  assert.equal(
+    bridge.getState().runtimeAdmitted,
+    isRuntimeAdmitted(receipt),
+  );
+
+  // Agent mode follows that Home-derived bit. A later live refuse
+  // must still fail-close (see admitRuntime refusal test).
   bridge.setMode("agent");
   const admission = requireAdmittedRuntime(
     bridge.getState().mode,
     bridge.getState().runtimeAdmitted,
   );
-  assert.equal(admission.admitted, false);
-  if (!admission.admitted) {
-    assert.match(admission.reason, /Agent mode/);
-  }
+  assert.equal(admission.admitted, isRuntimeAdmitted(receipt));
 });
 
 test("disconnected bridge exposes admitRuntime as a null-returning refusal", async () => {
