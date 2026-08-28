@@ -1,0 +1,39 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "APP-007-FREEZE-IDENTITY-ONLY-2026-08-28-2238-WIB",
+  "issue": "APP-007",
+  "linear": "AIN-938",
+  "hop": "freeze-identity-only",
+  "when": "2026-08-28 22:38 WIB",
+  "repo": "studiotune-ai/unsloth",
+  "pr": 1,
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "base_head": "d34f83c3d89f67cb8c6ff3800824ff0cbded2e9a",
+  "status": "IDENTITY_ONLY",
+  "packet": "APP-007 is IDENTITY_ONLY.",
+  "done_when_leftover": "Desktop admitted real train/serve path, quality compare",
+  "done_when_leftover_status": "HOLD",
+  "claim_ceiling": "identity log mounted on /compare; not a quality score; not FakeExecutor",
+  "this_hop_is_beta": false,
+  "beta_ready_claim": false,
+  "compare_quality_claimed": false,
+  "trained": false,
+  "hub_fetch": false,
+  "signed": false,
+  "merged": false,
+  "authority": false,
+  "not_fake_qlora": true,
+  "page_hold": true,
+  "unproven": [
+    "Desktop admitted real train/serve path (AIN-952 leftover).",
+    "Live parent-vs-candidate quality compare with a score.",
+    "Developer ID application signing + Apple notarization.",
+    "Merge of unsloth #1 or desktop-app #11."
+  ],
+  "next_safe_action": "HOLD",
+  "notes": [
+    "APP-007 freeze: identity log is on /compare. Quality stays unclaimed. This hop is not beta.",
+    "Done-when leftover (Desktop admitted real train/serve path, quality compare) stays HOLD.",
+    "claim_ceiling: identity log mounted on /compare; not a quality score; not FakeExecutor."
+  ]
+}

@@ -12,6 +12,8 @@ export type {
   CompareQualityResult,
   EvaluateCompareQualityInput,
 } from "./compare-quality";
+export { IDENTITY_LOG, textsIdentical } from "./identity-log";
+export type { IdentityLog } from "./identity-log";
 export {
   CLI007_RETAINED,
   RetainedAdapterBindRefused,

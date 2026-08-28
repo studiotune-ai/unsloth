@@ -127,6 +127,8 @@ test("compare page binds the retained adapter on the same HOLD surface", async (
   assert.ok(src.includes("CLI007_RETAINED"));
   assert.ok(src.includes("retained adapter bound, quality HOLD"));
   assert.ok(src.includes('data-studiotune-status="hold"'));
-  assert.ok(src.includes("No candidate to compare yet"));
+  assert.ok(src.includes("Identity log"));
+  assert.ok(src.includes('data-testid="compare-identity-log"'));
+  assert.ok(src.includes('data-studiotune-identity="true"'));
   assert.ok(!/path:\s*["']\/compare-/.test(src));
 });

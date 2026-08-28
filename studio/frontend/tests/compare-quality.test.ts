@@ -3,7 +3,7 @@
 
 // APP-007 / AIN-938: freeze /compare quality as HOLD. Fixtures are not
 // quality. Hub paths are refused. Even a real local parent+candidate log
-// cannot claim quality on this hop.
+// cannot claim quality on this hop. Identity panel is not a score.
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -140,12 +140,23 @@ test("identity parent+candidate log still HOLD, claimed false (identity != quali
   assert.equal(result.reason, "identity inference is not quality");
 });
 
-test("page source stays HOLD empty state and does not contain a quality score", async () => {
+test("page source shows identity panel, stays HOLD, does not contain a quality score", async () => {
   const src = await readFile(pageUrl, "utf8");
   assert.ok(src.includes('data-studiotune-status="hold"'));
-  assert.ok(src.includes("No candidate to compare yet"));
+  assert.ok(src.includes('data-testid="compare-identity-log"'));
+  assert.ok(src.includes('data-studiotune-identity="true"'));
+  assert.ok(src.includes("Identity log"));
   assert.ok(src.includes("quality_claimed=false"));
   assert.ok(src.includes("retained adapter bound, quality HOLD"));
+  assert.ok(
+    src.includes("identity inference is not quality") ||
+      src.includes("IDENTITY_LOG"),
+    "must evaluate the identity log on /compare",
+  );
+  assert.ok(
+    !src.includes("No candidate to compare yet"),
+    "empty-state copy must be gone",
+  );
   assert.ok(
     !/quality[_ ]?(score|pct|percent|metric)\s*[:=]/i.test(src),
     "must not render a quality score",
@@ -155,6 +166,7 @@ test("page source stays HOLD empty state and does not contain a quality score", 
     !/\b(win_rate|bleu|rouge|accuracy|eval_loss)\b/i.test(src),
     "must not render a scoring metric",
   );
+  assert.ok(!/\bimproved\b/i.test(src), "must not claim improved");
   assert.ok(!/fake_qlora/i.test(src), "must not claim FakeExecutor");
 });
 

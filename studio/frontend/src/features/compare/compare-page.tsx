@@ -4,6 +4,7 @@
 import { useLayoutEffect, useMemo } from "react";
 
 import { evaluateCompareQuality } from "./compare-quality";
+import { IDENTITY_LOG, textsIdentical } from "./identity-log";
 import {
   CLI007_RETAINED,
   bindRetainedAdapter,
@@ -12,14 +13,9 @@ import {
 /**
  * StudioTune Compare — parent vs candidate.
  *
- * HOLD placeholder for this hop: no fixtures are wired yet, so the page shows
- * an honest disconnected/empty state instead of a fake table. When fixtures
- * land it should label them as reference, not quality, and never Hub-fetch
- * models to score them.
- *
- * APP-007: a retained CLI-007 adapter may be bound for inspect. Identity
- * inference (parent vs parent+adapter, boring ping prompt) may exist as a
- * log; that is not a quality score. quality stays HOLD / claimed=false.
+ * APP-007: identity log is mounted on this same /compare route. HOLD stays.
+ * The pair is parent vs parent+adapter on a boring ping prompt. Identical
+ * texts are not a quality score. Never Hub-fetch models to score them.
  */
 export function ComparePage() {
   useLayoutEffect(() => {
@@ -29,9 +25,9 @@ export function ComparePage() {
   const quality = useMemo(
     () =>
       evaluateCompareQuality({
-        parentPath: null,
-        candidatePath: null,
-        log: null,
+        parentPath: CLI007_RETAINED.parentSnapshotDir,
+        candidatePath: CLI007_RETAINED.adapterDir,
+        log: IDENTITY_LOG,
       }),
     [],
   );
@@ -45,6 +41,8 @@ export function ComparePage() {
       }),
     [],
   );
+
+  const identical = textsIdentical(IDENTITY_LOG);
 
   return (
     <div
@@ -65,13 +63,15 @@ export function ComparePage() {
 
       <section className="flex flex-1 min-h-0 items-center justify-center p-6">
         <div
-          className="max-w-md rounded-xl border border-white/10 p-6 text-center"
+          className="w-full max-w-xl rounded-xl border border-white/10 p-6"
           data-studiotune-panel="true"
           data-studiotune-status="hold"
+          data-testid="compare-identity-log"
+          data-studiotune-identity="true"
           style={{ background: "var(--ai-panel)" }}
         >
           <div
-            className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs font-medium"
+            className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs font-medium"
             style={{ color: "var(--hold-fg)" }}
           >
             <span aria-hidden="true">●</span>
@@ -81,15 +81,64 @@ export function ComparePage() {
             className="text-base font-semibold"
             style={{ color: "var(--ai-text)" }}
           >
-            No candidate to compare yet
+            Identity log
           </h2>
           <p className="mt-2 text-sm" style={{ color: "var(--ai-muted)" }}>
-            Compare surfaces once a StudioTune training run produces a candidate
-            checkpoint on this machine. This hop ships the rail and the empty
-            state; the reference-vs-candidate table lands next.
+            Parent vs parent+adapter on a boring ping prompt. Identical texts;
+            identity inference is not quality.
           </p>
+          <dl className="mt-4 space-y-3 text-left">
+            <div>
+              <dt
+                className="text-xs uppercase tracking-wide"
+                style={{ color: "var(--ai-muted)" }}
+              >
+                prompt
+              </dt>
+              <dd
+                className="mt-1 font-mono text-xs whitespace-pre-wrap"
+                style={{ color: "var(--ai-text)" }}
+              >
+                {IDENTITY_LOG.prompt}
+              </dd>
+            </div>
+            <div>
+              <dt
+                className="text-xs uppercase tracking-wide"
+                style={{ color: "var(--ai-muted)" }}
+              >
+                parent_text
+              </dt>
+              <dd
+                className="mt-1 font-mono text-xs whitespace-pre-wrap"
+                style={{ color: "var(--ai-text)" }}
+              >
+                {IDENTITY_LOG.parent_text}
+              </dd>
+            </div>
+            <div>
+              <dt
+                className="text-xs uppercase tracking-wide"
+                style={{ color: "var(--ai-muted)" }}
+              >
+                candidate_text
+              </dt>
+              <dd
+                className="mt-1 font-mono text-xs whitespace-pre-wrap"
+                style={{ color: "var(--ai-text)" }}
+              >
+                {IDENTITY_LOG.candidate_text}
+              </dd>
+            </div>
+          </dl>
           <p
             className="mt-4 text-xs"
+            style={{ color: "var(--ai-muted)" }}
+          >
+            identical={identical ? "true" : "false"} · quality_claimed=false
+          </p>
+          <p
+            className="mt-2 text-xs"
             style={{ color: "var(--ai-muted)" }}
             data-studiotune-quality-claimed="false"
             data-studiotune-authority="false"
