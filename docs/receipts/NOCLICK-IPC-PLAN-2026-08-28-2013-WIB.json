@@ -1,0 +1,27 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "NOCLICK-IPC-PLAN-2026-08-28-2013-WIB",
+  "generatedAtWib": "2026-08-28 20:13:21 WIB",
+  "host": "HizrianacStudio.localdomain",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "parentSha": "31256436b",
+  "lock": "CoS: prove IPC hand-off without a click. No GUI. No Developer ID.",
+  "beta_ready_claim": false,
+  "proven": {
+    "path": "Desktop make_plan_request_line -> ~/.studiotune/tune-agent --stdio-json",
+    "method": "plan",
+    "authority": false,
+    "action_taken": false,
+    "engine_called": false,
+    "schema": "studiotune.tune-agent-stdio.v1",
+    "ok": false,
+    "code": "OUTCOME_PLAN_BLOCKED_BY_DIAGNOSIS",
+    "disposition": "REVISE",
+    "train": "STDIO_METHOD_UNKNOWN"
+  },
+  "unproven": [
+    "plan painted in the running window",
+    "Developer ID / notarize / second Mac / merge"
+  ],
+  "next_safe_action": "HOLD"
+}
