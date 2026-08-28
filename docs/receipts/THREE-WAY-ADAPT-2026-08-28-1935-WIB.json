@@ -1,0 +1,157 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "THREE-WAY-ADAPT-2026-08-28-1935-WIB",
+  "lock": "Hizrian lock 2026-08-28 19:35 WIB",
+  "generatedAtWib": "2026-08-28 19:46:26 WIB",
+  "host": "HizrianacStudio.localdomain",
+  "machineId": "747eebd2-6870-42a2-82f0-cef8be641489",
+  "repo": "/Volumes/HFR WD_BLACK SN850X/code/studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": "https://github.com/studiotune-ai/unsloth/pull/1",
+  "headSha": "0e26c0b33",
+  "relatedShas": {
+    "chromeClusySession": "70c1dbda2db05d7e2e1b040928e74ab9b0edfdb3",
+    "webfontsLocales": "5a156bfef7dae1d3a780fba836c25d39d99b8388",
+    "agentsPickerCopy": "0e26c0b33"
+  },
+  "productName": "StudioTune",
+  "identifier": "ai.studiotune.desktop",
+  "tokens": {
+    "--ai-bg": "#05060a",
+    "--ai-accent": "#a9c7ff",
+    "uiFont": "Poppins",
+    "monoFont": "IBM Plex Mono",
+    "tokenSource": "desktop-app/src/style.css (READ ONLY)"
+  },
+  "threeWayAdapt": {
+    "clusy": {
+      "adapted": [
+        "focused first prompt on /home",
+        "visible plan card as canvas (Home + Tune Agent rail share PlanCard)",
+        "revise / drop / discard / branch_from on the card",
+        "Accept required before follow into /studio",
+        "conversation handedToRail after a plan exists",
+        "UI navigates to /studio after clarification-free Accept",
+        "local only \u2014 no Clusy notebook, Hub picker, GPU picker, credits, or publish"
+      ],
+      "stillLacks": [
+        "No live Clusy LLM plan generation \u2014 buildOutcomePlan is a local pure function",
+        "No Clusy notebook cells or cloud runtime picker (intentionally omitted)",
+        "branch_from is a local second proposal, not a Clusy cloud fork"
+      ]
+    },
+    "unsloth": {
+      "kept": [
+        "host train stack: model pick, local dataset, LoRA/QLoRA/full knobs, run, export",
+        "/studio StudioPage + src/features/training/* intact",
+        "primary rail pinned: train, recipes, export, compare"
+      ],
+      "restyled": [
+        "index.css chrome remap to --ai-* tokens",
+        "wordmark / title / i18n brand+product = StudioTune",
+        "Poppins + IBM Plex Mono webfonts shipped",
+        "default theme dark"
+      ],
+      "stillLooksUnsloth": [
+        "Hellix / Inter / Space Grotesk still imported under the remap",
+        "Unsloth :root green #17b88b still declared before the later remap",
+        "Chat / Images / Video / Audio still exist under More",
+        "Hub route still present (demoted, unpinned)",
+        "HF dataset subset selectors remain in training",
+        "CLI copy still names `unsloth start` / `unsloth studio update` (honest host binary)",
+        "storage keys still unsloth_auth_*",
+        "deep-link still lists unsloth scheme alongside studiotune",
+        "AGPL copyright headers still say Unsloth AI Inc. team",
+        "example Hub repo still unsloth/Qwen3.8-27B-GGUF",
+        "sloth mascot assets / some unsloth-* class names remain"
+      ]
+    },
+    "cursor": {
+      "adapted": [
+        "Ask / Plan / Agent mode switch on Tune Agent rail",
+        "Plan never calls Engine (requestPlan + Accept are recipe-only)",
+        "Agent may Train only after admit (Accept \u2260 Grant \u2260 Train)",
+        "Ask inspects only"
+      ],
+      "stillLacks": [
+        "Agent Train button records intent; live run stays on the Unsloth /studio train stack this hop",
+        "No Cursor-style tool loop, diffs, or MCP execution stolen beyond the local admit/train guards",
+        "Not a Cursor fork"
+      ]
+    }
+  },
+  "tests": {
+    "frontendNodeTest": {
+      "command": "node --experimental-strip-types --test <522 files under studio/frontend/tests>",
+      "tests": 5353,
+      "pass": 5353,
+      "fail": 0,
+      "skipped": 0,
+      "durationMs": 50343,
+      "host": "HizrianacStudio.localdomain",
+      "verdict": "pass"
+    },
+    "studiotuneContracts": {
+      "files": [
+        "studiotune-admit-parity.test.ts",
+        "studiotune-brand-tokens.test.ts",
+        "studiotune-clusy-plan-session.test.ts",
+        "studiotune-home-composer.test.ts",
+        "studiotune-nav-defaults.test.ts",
+        "studiotune-tauri-conf.test.ts",
+        "studiotune-tune-agent-bridge.test.ts",
+        "studiotune-tune-agent-guards.test.ts",
+        "studiotune-tune-agent-shared-card.test.ts"
+      ],
+      "tests": 97,
+      "pass": 97,
+      "fail": 0,
+      "verdict": "pass"
+    }
+  },
+  "filesTouchedThisLock": [
+    "studio/frontend/src/features/home/plan-session-store.ts",
+    "studio/frontend/src/features/home/home-composer.tsx",
+    "studio/frontend/src/features/home/plan-card.tsx",
+    "studio/frontend/src/features/home/index.ts",
+    "studio/frontend/src/features/tune-agent/tune-agent-rail.tsx",
+    "studio/frontend/src/components/app-sidebar.tsx",
+    "studio/frontend/src/features/auth/session.ts",
+    "studio/frontend/src/features/settings/stores/theme-store.ts",
+    "studio/frontend/src/index.css",
+    "studio/frontend/src/brand/studiotune-brand.css",
+    "studio/frontend/public/theme-boot.js",
+    "studio/frontend/public/fonts/poppins-400-latin.woff2",
+    "studio/frontend/public/fonts/poppins-500-latin.woff2",
+    "studio/frontend/public/fonts/poppins-600-latin.woff2",
+    "studio/frontend/public/fonts/ibm-plex-mono-400-latin.woff2",
+    "studio/frontend/public/fonts/ibm-plex-mono-500-latin.woff2",
+    "studio/frontend/src/i18n/locales/*.ts",
+    "studio/frontend/tests/studiotune-brand-tokens.test.ts",
+    "studio/frontend/tests/studiotune-clusy-plan-session.test.ts",
+    "studio/frontend/tests/agents-model-picker.test.ts",
+    "docs/receipts/studiotune-desktop-rebrand-2026-08-28.md"
+  ],
+  "untouchedByLock": [
+    "desktop-app (PR #11) \u2014 read-only tokens/fonts source",
+    "web",
+    "deck / seed-raise"
+  ],
+  "beta_ready_claim": false,
+  "authority": false,
+  "action_taken": false,
+  "signed": false,
+  "notarized": false,
+  "published": false,
+  "merged": false,
+  "hub_contacted": false,
+  "cloud_agent": false,
+  "verdict": "hold",
+  "unprovenBlocksSignedBeta": [
+    "Second Mac cold-start on a machine without any dev tooling",
+    "Developer ID application signing + Apple notarization + stapled ticket",
+    "Live Compare quality run (parent vs candidate) against real fixtures",
+    "Tune Agent process shipped alongside the .app",
+    "Agent Train still records intent rather than starting the host train loop"
+  ]
+}
