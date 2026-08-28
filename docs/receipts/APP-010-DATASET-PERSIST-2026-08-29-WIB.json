@@ -1,0 +1,91 @@
+{
+  "id": "APP-010-DATASET-PERSIST-2026-08-29-WIB",
+  "issue": "APP-010",
+  "linear": "AIN-952",
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "hop": "dataset-bind-localstorage-persist",
+  "when": "2026-08-29 00:23 WIB",
+  "timestamp_wib": "2026-08-29 00:23 WIB",
+  "status": "HOLD",
+  "repo": "studiotune-ai/unsloth",
+  "branch": "cursor/studiotune-desktop-rebrand-faf5",
+  "pr": 1,
+  "persist_surface": {
+    "module": "studio/frontend/src/features/data-recipes/data/local-files-home-bind.ts",
+    "store": "localStorage",
+    "key": "studiotune.home.dataset-bind.v1",
+    "payload": [
+      "path",
+      "hash",
+      "authority"
+    ],
+    "authority": false,
+    "dexie_recipe_record": false,
+    "dexie_db": "unsloth-data-recipes (untouched by Accept)",
+    "hydrate": "module load + hydrateAcceptedLocalDatasetBind()",
+    "clear": "clearAcceptedLocalFilesFromHome / page Reject clears memory and store",
+    "remote_refused": true,
+    "hub_id_refused": true,
+    "invalid_store_fail_close": true,
+    "runtimeAdmitted_flipped": false,
+    "runtimeAdmitted_source": "isRuntimeAdmitted(receipt)"
+  },
+  "tests": {
+    "path": "studio/frontend/tests/local-files-home-bind.test.ts",
+    "count": 10,
+    "pass": 10,
+    "fail": 0,
+    "invariants": [
+      "accept bind persists {path, hash, authority:false}",
+      "hydrate after reload restores the persisted local bind",
+      "proposed (not accepted) does not seed dataset or store",
+      "reject/clear drops memory and store",
+      "remote and Hub ids refused and never persisted",
+      "invalid store fail-closes to null and clears the key",
+      "bind/hydrate never flip runtimeAdmitted",
+      "accepted dataset still HOLD on admit=false",
+      "hydrated dataset + ADMITTED receipt: missing-dataset false, missing-admit false",
+      "cleared bind: missing-dataset true; missing-admit stays false"
+    ]
+  },
+  "log_proof": {
+    "via": "buildOutcomePlan",
+    "hydrated_dataset_plus_admitted_receipt": {
+      "missing-dataset": false,
+      "missing-admit": false
+    },
+    "cleared_bind": {
+      "missing-dataset": true,
+      "missing-admit": false
+    }
+  },
+  "runtimeAdmitted": true,
+  "runtimeAdmitted_derived": true,
+  "receipt_status": "ADMITTED",
+  "trained": false,
+  "train_this_hop": false,
+  "engine_called": false,
+  "grant_this_hop": false,
+  "hub_contacted": false,
+  "pixel": "UNPROVEN",
+  "pixel_proven": false,
+  "beta_ready_claim": false,
+  "signed": false,
+  "sign_this_hop": false,
+  "notarize": false,
+  "notarize_this_hop": false,
+  "publish_this_hop": false,
+  "merge_desktop_app_11": false,
+  "no_push": true,
+  "pushed": false,
+  "authority": false,
+  "action_taken": false,
+  "verdict": "hold",
+  "notes": [
+    "Accept bind now writes memory + localStorage studiotune.home.dataset-bind.v1.",
+    "Hydrate on module load so Home factsFromBinds() survives relaunch.",
+    "Reject/clear wipes both. Remote/Hub/invalid/authority!==false fail-close and clear store.",
+    "No Dexie RecipeRecord from Accept. No Engine. No train. No Grant. No sign.",
+    "Pixel UNPROVEN. HOLD. no_push true."
+  ]
+}

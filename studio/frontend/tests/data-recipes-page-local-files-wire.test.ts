@@ -43,13 +43,14 @@ test("page keeps a single /data-recipes surface (no second recipe UI)", async ()
   );
 });
 
-test("Accept binds the in-memory proposal only — never Dexie / engine / train", async () => {
+test("Accept binds Home (localStorage) — never Dexie / engine / train", async () => {
   const src = await pageSrc();
   const start = src.indexOf("function acceptLocalFiles");
   assert.ok(start >= 0, "acceptLocalFiles must exist");
   const end = src.indexOf("function rejectLocalFiles", start);
   const fn = src.slice(start, end);
   assert.ok(fn.includes("acceptLocalFilesProposal(localFilesProposal)"));
+  assert.ok(fn.includes("bindAcceptedLocalFilesToHome(next)"));
   assert.ok(!fn.includes("createRecipeDraft"));
   assert.ok(!fn.includes("createRecipeFromLearningRecipe"));
   assert.ok(!/saveRecipe/.test(fn));
@@ -68,5 +69,6 @@ test("Reject clears the proposal without deleting Dexie recipes", async () => {
   const end = src.indexOf("const isBusy", start);
   const fn = src.slice(start, end);
   assert.ok(fn.includes("rejectLocalFilesProposal(localFilesProposal)"));
+  assert.ok(fn.includes("clearAcceptedLocalFilesFromHome()"));
   assert.ok(!fn.includes("deleteRecipe"));
 });

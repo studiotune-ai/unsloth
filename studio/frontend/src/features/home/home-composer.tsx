@@ -44,7 +44,8 @@ import { isRuntimeAdmitted, receipt } from "./mlx-runtime-admission";
  *
  *   * Facts (`parent` / `dataset` / `runtimeAdmitted`) are the tiny snapshot
  *     the local host already knows. Parent is seeded from the APP-007 retained local snapshot dir.
- *     Dataset is seeded from an accepted APP-010 local-files bind.
+ *     Dataset is seeded from an accepted APP-010 local-files bind
+ *     (hydrated from localStorage `studiotune.home.dataset-bind.v1`).
  *     runtimeAdmitted is derived from the persisted mlx admission receipt
  *     via `isRuntimeAdmitted(receipt)` — never hardcoded true, never a toggle.
  *     Accept still never calls Engine.

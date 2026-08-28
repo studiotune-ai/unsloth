@@ -5,8 +5,9 @@
 // repo ships eight invariants for local-files proposals. This suite mirrors
 // those invariants on the Unsloth host surface. The module under test lives
 // in the same Dexie-layer folder as `recipes-db.ts`; we deliberately do NOT
-// touch that store here, since Accept must not create a Recipe row and
-// Reject must not touch persisted state.
+// touch that store here, since Accept must not create a Recipe row.
+// Home dataset persist is a separate localStorage surface in
+// local-files-home-bind.ts, not a Dexie RecipeRecord.
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -203,10 +204,10 @@ test("accept: updates only the proposal — never train / run / export / persist
   assert.ok(!/recipes-db/.test(src), "must not touch the recipes Dexie store");
 });
 
-test("reject: clears the proposal without touching persisted state", () => {
+test("reject: clears the proposal without writing a Dexie RecipeRecord", () => {
   // Invariant 5: Reject returns null and does not mutate the input.
-  // There is no persisted state to unwind because Accept never wrote
-  // one — the proposal is in-memory only.
+  // This function does not write Dexie. Home bind persist is a separate
+  // localStorage surface cleared by clearAcceptedLocalFilesFromHome.
   const proposal: LocalFilesProposal = {
     id: "local-files:zzz",
     hash: "zzz",

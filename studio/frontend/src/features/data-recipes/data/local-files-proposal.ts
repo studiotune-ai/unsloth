@@ -13,8 +13,10 @@
  *   * Hub / remote paths are refused (never resolved, never fetched).
  *   * Accept updates only the proposal — never approve, never run, never
  *     train, never export. It does not touch the Dexie `unsloth-data-recipes`
- *     store either.
- *   * Reject clears the proposal without touching any persisted state.
+ *     store. Home dataset persist is a separate localStorage write in
+ *     `local-files-home-bind.ts`, not a RecipeRecord.
+ *   * Reject clears the proposal. It does not write Dexie. Page Reject also
+ *     clears the Home localStorage bind via clearAcceptedLocalFilesFromHome.
  *   * Every proposal returned carries `authority: false`. This surface has
  *     no authority to spend, sign, notarize, publish, or contact the Hub.
  *
@@ -256,7 +258,8 @@ export type AcceptLocalFilesInput = {
 };
 
 /**
- * Accept the proposal. This ONLY updates the in-memory proposal record.
+ * Accept the proposal. This ONLY updates the proposal record (not Dexie).
+ * Home persist, if any, is the caller's bindAcceptedLocalFilesToHome.
  * It never approves, runs, trains, exports, or contacts the Hub. The Dexie
  * `unsloth-data-recipes` store is not touched.
  *
@@ -279,9 +282,9 @@ export function acceptLocalFilesProposal(
 }
 
 /**
- * Reject the proposal. Returns `null`; no persisted state is touched, no
- * engine call, no Hub call, no Dexie write. The caller drops the proposal
- * from its state.
+ * Reject the proposal. Returns `null`; no Dexie write, no engine call, no
+ * Hub call. The caller drops the proposal and, on the page, also clears
+ * the Home localStorage bind.
  */
 export function rejectLocalFilesProposal(
   _proposal: LocalFilesProposal | null,

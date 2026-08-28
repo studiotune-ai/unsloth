@@ -25,6 +25,8 @@ export {
   clearAcceptedLocalFilesFromHome,
   getAcceptedLocalDatasetBind,
   getAcceptedLocalDatasetPath,
+  hydrateAcceptedLocalDatasetBind,
+  HOME_DATASET_BIND_STORAGE_KEY,
   subscribeAcceptedLocalDataset,
 } from "./data/local-files-home-bind";
 export type { AcceptedLocalDatasetBind } from "./data/local-files-home-bind";
