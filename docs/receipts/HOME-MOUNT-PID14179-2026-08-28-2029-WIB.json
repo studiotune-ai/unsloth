@@ -1,0 +1,13 @@
+{
+  "schema": "studiotune-desktop/journey-receipt@1",
+  "id": "HOME-MOUNT-PID14179-2026-08-28-2029-WIB",
+  "generatedAtWib": "2026-08-28 20:30:36 WIB",
+  "pid": 14179,
+  "verdict": "home_mount_not_blocked",
+  "detail": "desktop-login 401 then 200 on pid 14278 backend. 401 is probe miss, not a wall. requireAuth is no-op in Tauri. getPostAuthRoute returns /home. Backend GET /home 404 is the Unsloth site-packages API, not the Tauri webview. No tune-agent child, so Home auto-requestPlan bails and PlanCard stays empty. No fake session. personalization 422 is a separate settings payload fail.",
+  "user_gated": false,
+  "session_faked": false,
+  "tune_agent_child": false,
+  "beta_ready_claim": false,
+  "next_safe_action": "HOLD"
+}
